@@ -5,6 +5,51 @@
 }
 
 <div class="container mt-4">
+    <!-- Search Box -->
+    <div class="search-box-container mb-4">
+        <div class="input-group">
+            <span class="input-group-text bg-white border-end-0">
+                <i class="fas fa-search"></i>
+            </span>
+            <input type="text" class="form-control border-start-0" placeholder="Search jobs..." id="searchInput">
+            <button class="btn btn-primary" type="button" id="searchButton">
+                Search
+            </button>
+        </div>
+    </div>
+
+    <!-- Filter Panel -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filter Jobs</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <label class="form-label">Status</label>
+                    <select class="form-select filter-select" id="statusFilter">
+                        <option value="all">All Statuses</option>
+                        <option value="active">Active Only</option>
+                        <option value="closed">Closed</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Location</label>
+                    <input type="text" class="form-control filter-input" id="locationFilter" placeholder="Any location">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Salary Range</label>
+                    <select class="form-select filter-select" id="salaryFilter">
+                        <option value="all">Any Salary</option>
+                        <option value="0-50000">$0 - $50k</option>
+                        <option value="50000-100000">$50k - $100k</option>
+                        <option value="100000">$100k+</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1><i class="fas fa-briefcase me-2"></i>@ViewData["Title"]</h1>
         <a asp-action="Create" class="btn btn-primary">
@@ -12,68 +57,173 @@
         </a>
     </div>
 
-    <div class="row">
-        @foreach (var item in Model)
-        {
-            <div class="col-md-6 col-lg-4 mb-4">
-                <div class="job-card h-100">
-                    <div class="card-header @(item.IsActive ? "bg-success" : "bg-secondary") text-white">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">@item.Title</h5>
-                            <span class="badge @(item.IsActive ? "bg-light text-dark" : "bg-dark")">
-                                @(item.IsActive ? "Active" : "Closed")
-                            </span>
+    @if (!Model.Any())
+    {
+        <!-- Empty State -->
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-briefcase"></i>
+            </div>
+            <h3>No Job Postings Found</h3>
+            <p>There are currently no job openings available.</p>
+            <a asp-action="Create" class="btn btn-primary mt-3">
+                <i class="fas fa-plus me-2"></i>Create First Job
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var item in Model)
+            {
+                <div class="col-md-6 col-lg-4 mb-4 job-card-container">
+                    <div class="job-card h-100" data-status="@(item.IsActive ? "active" : "closed")"
+                         data-location="@item.Location.ToLower()"
+                         data-salary="@item.SalaryRangeMax">
+                        <div class="card-header @(item.IsActive ? "bg-success" : "bg-secondary") text-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">@item.Title</h5>
+                                <span class="badge @(item.IsActive ? "bg-light text-dark" : "bg-dark")">
+                                    @(item.IsActive ? "Active" : "Closed")
+                                </span>
+                            </div>
                         </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="job-meta mb-3">
-                            <div class="mb-2">
-                                <i class="fas fa-map-marker-alt text-muted"></i>
-                                <span>@item.Location</span>
+                        <div class="card-body">
+                            <div class="job-meta mb-3">
+                                <div class="mb-2">
+                                    <i class="fas fa-map-marker-alt text-muted"></i>
+                                    <span>@item.Location</span>
+                                </div>
+                                <div class="mb-2">
+                                    <i class="fas fa-money-bill-wave text-muted"></i>
+                                    <span>@item.SalaryRangeMin.ToString("C0") - @item.SalaryRangeMax.ToString("C0")</span>
+                                </div>
+                                <div>
+                                    <i class="fas fa-calendar-day text-muted"></i>
+                                    <span>Posted: @item.PostedDate.ToString("MMM dd, yyyy")</span>
+                                </div>
                             </div>
-                            <div class="mb-2">
-                                <i class="fas fa-money-bill-wave text-muted"></i>
-                                <span>@item.SalaryRangeMin.ToString("C0") - @item.SalaryRangeMax.ToString("C0")</span>
+
+                            <!-- Salary Progress Bar -->
+                            <div class="salary-display mt-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <small>@item.SalaryRangeMin.ToString("C0")</small>
+                                    <small>@item.SalaryRangeMax.ToString("C0")</small>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-success"
+                                         style="width: @((item.SalaryRangeMin/item.SalaryRangeMax)*100)%"
+                                         role="progressbar"></div>
+                                </div>
                             </div>
-                            <div>
-                                <i class="fas fa-calendar-day text-muted"></i>
-                                <span>Posted: @item.PostedDate.ToString("MMM dd, yyyy")</span>
-                            </div>
+
+                            <p class="job-description mt-3">@(item.Description.Length > 100 ? item.Description.Substring(0, 100) + "..." : item.Description)</p>
                         </div>
-                        <p class="job-description">@(item.Description.Length > 100 ? item.Description.Substring(0, 100) + "..." : item.Description)</p>
-                    </div>
-                    <div class="card-footer bg-transparent">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="applications-count text-muted small">
-                                <i class="fas fa-users"></i> @(item.Applications?.Count ?? 0) applications
-                            </span>
-                            <div class="action-buttons btn-group">
-                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-warning">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">
-                                    <i class="fas fa-trash-alt"></i>
-                                </a>
+                        <div class="card-footer bg-transparent">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="applications-count text-muted small">
+                                    <i class="fas fa-users"></i> @(item.Applications?.Count ?? 0) applications
+                                </span>
+                                <div class="action-buttons btn-group">
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-warning">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                            data-bs-toggle="modal" data-bs-target="#deleteModal"
+                                            data-job-id="@item.Id" data-job-title="@item.Title">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+            }
+        </div>
+    }
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-        }
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong id="jobTitleToDelete"></strong>? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <a id="deleteConfirmBtn" href="#" class="btn btn-danger">Delete</a>
+            </div>
+        </div>
     </div>
 </div>
 
 @section Styles {
     <style>
+        /* Search Box */
+        .search-box-container {
+            position: relative;
+            max-width: 500px;
+            margin: 0 auto 2rem auto;
+        }
+
+            .search-box-container .input-group-text {
+                border-radius: 50px 0 0 50px !important;
+                padding-left: 20px;
+            }
+
+            .search-box-container .form-control {
+                border-radius: 0 !important;
+                padding: 10px 15px;
+                border-left: none !important;
+            }
+
+            .search-box-container .btn {
+                border-radius: 0 50px 50px 0 !important;
+                padding: 10px 20px;
+            }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 0;
+            margin: 50px 0;
+            border: 2px dashed #eee;
+            border-radius: 10px;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            color: #6c757d;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h3 {
+            color: #343a40;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            color: #6c757d;
+            max-width: 500px;
+            margin: 0 auto 20px;
+        }
+
+        /* Job Cards */
         .job-card {
             border-radius: 10px;
             overflow: hidden;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             transition: all 0.3s ease;
             border: none;
+            height: 100%;
         }
 
             .job-card:hover {
@@ -119,5 +269,91 @@
             font-weight: 500;
             padding: 0.35em 0.65em;
         }
+
+        /* Salary Progress Bar */
+        .salary-display {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .progress {
+            background-color: #e9ecef;
+        }
     </style>
+}
+
+@section Scripts {
+    <script>
+        // Filter and Search Functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Filter elements
+            const statusFilter = document.getElementById('statusFilter');
+            const locationFilter = document.getElementById('locationFilter');
+            const salaryFilter = document.getElementById('salaryFilter');
+            const searchInput = document.getElementById('searchInput');
+            const searchButton = document.getElementById('searchButton');
+
+            // Add event listeners
+            [statusFilter, locationFilter, salaryFilter].forEach(filter => {
+                filter.addEventListener('change', filterJobs);
+            });
+
+            locationFilter.addEventListener('input', filterJobs);
+            searchInput.addEventListener('input', filterJobs);
+            searchButton.addEventListener('click', filterJobs);
+
+            // Delete Modal
+            const deleteModal = document.getElementById('deleteModal');
+            if (deleteModal) {
+                deleteModal.addEventListener('show.bs.modal', function(event) {
+                    const button = event.relatedTarget;
+                    const jobId = button.getAttribute('data-job-id');
+                    const jobTitle = button.getAttribute('data-job-title');
+
+                    document.getElementById('jobTitleToDelete').textContent = jobTitle;
+                    document.getElementById('deleteConfirmBtn').href = `/JobPostings/Delete/${jobId}`;
+                });
+            }
+
+            function filterJobs() {
+                const statusValue = statusFilter.value;
+                const locationValue = locationFilter.value.toLowerCase();
+                const salaryValue = salaryFilter.value;
+                const searchValue = searchInput.value.toLowerCase();
+
+                document.querySelectorAll('.job-card-container').forEach(container => {
+                    const card = container.querySelector('.job-card');
+                    const status = card.getAttribute('data-status');
+                    const location = card.getAttribute('data-location');
+                    const salary = parseFloat(card.getAttribute('data-salary'));
+                    const title = card.querySelector('h5').textContent.toLowerCase();
+                    const description = card.querySelector('.job-description').textContent.toLowerCase();
+
+                    // Status filter
+                    const statusMatch = statusValue === 'all' ||
+                                      (statusValue === 'active' && status === 'active') ||
+                                      (statusValue === 'closed' && status === 'closed');
+
+                    // Location filter
+                    const locationMatch = location.includes(locationValue);
+
+                    // Salary filter
+                    let salaryMatch = true;
+                    if (salaryValue !== 'all') {
+                        const [min, max] = salaryValue.split('-').map(Number);
+                        salaryMatch = max ? (salary >= min && salary <= max) : (salary >= min);
+                    }
+
+                    // Search filter
+                    const searchMatch = searchValue === '' ||
+                                      title.includes(searchValue) ||
+                                      description.includes(searchValue);
+
+                    // Show/hide based on all filters
+                    container.style.display = statusMatch && locationMatch && salaryMatch && searchMatch ? 'block' : 'none';
+                });
+            }
+        });
+    </script>
 }
