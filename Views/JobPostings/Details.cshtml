@@ -1,0 +1,14 @@
+﻿@model JobPosting
+
+<div class="job-details">
+    <h2>@Model.Title</h2>
+    <!-- Keep all job details display -->
+
+    <h3>Apply for this Position</h3>
+
+    <form asp-controller="Candidates" asp-action="Apply" method="post" enctype="multipart/form-data">
+        <!-- Keep the entire form as is -->
+    </form>
+
+    <!-- REMOVE the authenticated-only applications table -->
+</div>

@@ -1,0 +1,44 @@
+﻿@model HireSphere.Models.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<h2>HireSphere Dashboard</h2>
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary mb-3">
+            <div class="card-header">Total Jobs</div>
+            <div class="card-body">
+                <h4 class="card-title">@Model.TotalJobs</h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card text-white bg-success mb-3">
+            <div class="card-header">Active Jobs</div>
+            <div class="card-body">
+                <h4 class="card-title">@Model.ActiveJobs</h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card text-white bg-info mb-3">
+            <div class="card-header">Total Candidates</div>
+            <div class="card-body">
+                <h4 class="card-title">@Model.TotalCandidates</h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card text-white bg-warning mb-3">
+            <div class="card-header">Total Applications</div>
+            <div class="card-body">
+                <h4 class="card-title">@Model.TotalApplications</h4>
+            </div>
+        </div>
+    </div>
+</div>
