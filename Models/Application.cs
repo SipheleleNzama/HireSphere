@@ -9,6 +9,7 @@
         public Candidate? Candidate { get; set; }
         public DateTime ApplicationDate { get; set; }
         public ApplicationStatus? Status { get; set; }
+        public string? ResumePath { get; set; }
         public decimal MatchScore { get; set; }
         public string? AIEvaluationNotes { get; set; }
     }

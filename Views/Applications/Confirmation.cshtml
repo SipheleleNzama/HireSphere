@@ -1,0 +1,41 @@
+﻿@model HireSphere.Models.Application
+
+@{
+    ViewData["Title"] = "Application Submitted";
+}
+
+<div class="container">
+    <div class="card shadow">
+        <div class="card-header bg-success text-white">
+            <h2><i class="fas fa-check-circle me-2"></i>@ViewData["Title"]</h2>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-success">
+                <h4>Thank you, @Model.Candidate.FirstName!</h4>
+                <p>Your application for <strong>@Model.JobPosting.Title</strong> has been submitted successfully.</p>
+            </div>
+
+            <div class="application-details">
+                <h5>Application Details</h5>
+                <dl class="row">
+                    <dt class="col-sm-3">Application ID:</dt>
+                    <dd class="col-sm-9">@Model.Id</dd>
+
+                    <dt class="col-sm-3">Date:</dt>
+                    <dd class="col-sm-9">@Model.ApplicationDate.ToString("f")</dd>
+
+                    <dt class="col-sm-3">Status:</dt>
+                    <dd class="col-sm-9">
+                        <span class="badge bg-info">@Model.Status</span>
+                    </dd>
+                </dl>
+            </div>
+
+            <div class="mt-4">
+                <a asp-controller="JobPostings" asp-action="Index" class="btn btn-primary">
+                    <i class="fas fa-briefcase me-1"></i> View Other Jobs
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

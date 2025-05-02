@@ -41,6 +41,12 @@
             <a asp-action="Index" class="btn btn-secondary">
                 <i class="fas fa-arrow-left me-1"></i> Back to List
             </a>
+        </div> 
+        <div class="mt-4">
+            <a asp-controller="Applications" asp-action="Create" asp-route-jobId="@Model.Id"
+               class="btn btn-primary btn-lg">
+                <i class="fas fa-file-alt me-2"></i>Apply Now
+            </a>
         </div>
     </div>
 </div>

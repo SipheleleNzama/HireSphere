@@ -1,5 +1,6 @@
 using HireSphere.Data;
 using HireSphere.Services;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,6 +19,17 @@ builder.Services.AddDbContext<HireSphereDbContext>(options =>
 builder.Services.AddScoped<JobPostingService>();
 builder.Services.AddScoped<AIService>();
 builder.Services.AddScoped<FileUploadService>();
+
+// Configure file upload limits
+builder.Services.Configure<IISServerOptions>(options =>
+{
+    options.MaxRequestBodySize = 10 * 1024 * 1024; // 10MB
+});
+
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 10 * 1024 * 1024; // 10MB
+});
 
 var app = builder.Build();
 
