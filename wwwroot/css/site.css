@@ -104,3 +104,105 @@ body {
         transform: translateY(0px);
     }
 }
+/* Add to site.css */
+a, .btn, .card, .nav-link {
+    transition: all 0.3s ease;
+}
+
+    a:hover {
+        opacity: 0.8;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+    }
+.enhanced-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+}
+
+    .enhanced-table th {
+        background: #2c3e50;
+        color: white;
+        position: sticky;
+        top: 0;
+    }
+
+    .enhanced-table td, .enhanced-table th {
+        padding: 12px 15px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .enhanced-table tr:hover td {
+        background-color: #f8f9fa;
+    }
+
+    .enhanced-table tr:last-child td {
+        border-bottom: none;
+    }
+.badge {
+    padding: 5px 10px;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.badge.bg-success {
+    background-color: #28a745 !important;
+}
+
+.badge.bg-secondary {
+    background-color: #6c757d !important;
+}
+.form-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 30px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.form-header {
+    padding-bottom: 15px;
+    margin-bottom: 30px;
+    border-bottom: 1px solid #eee;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-control, .form-select {
+    padding: 10px 15px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+    .form-control:focus {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+
+.btn-submit {
+    padding: 10px 25px;
+    font-weight: 500;
+}
