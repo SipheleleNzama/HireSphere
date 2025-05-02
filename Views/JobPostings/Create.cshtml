@@ -1,0 +1,106 @@
+﻿@model HireSphere.Models.JobPosting
+
+@{
+    ViewData["Title"] = "Create New Job Posting";
+}
+
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h2 class="mb-0"><i class="fas fa-plus-circle me-2"></i>@ViewData["Title"]</h2>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create" class="needs-validation" novalidate>
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <label asp-for="Title" class="form-label">Job Title</label>
+                        <input asp-for="Title" class="form-control" required />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="Location" class="form-label">Location</label>
+                        <input asp-for="Location" class="form-control" required />
+                        <span asp-validation-for="Location" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="ExpiryDate" class="form-label">Expiry Date</label>
+                        <input asp-for="ExpiryDate" type="date" class="form-control" required
+                               min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                        <span asp-validation-for="ExpiryDate" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="SalaryRangeMin" class="form-label">Minimum Salary</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input asp-for="SalaryRangeMin" type="number" class="form-control" required />
+                        </div>
+                        <span asp-validation-for="SalaryRangeMin" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="SalaryRangeMax" class="form-label">Maximum Salary</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input asp-for="SalaryRangeMax" type="number" class="form-control" required />
+                        </div>
+                        <span asp-validation-for="SalaryRangeMax" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label">Job Description</label>
+                    <textarea asp-for="Description" class="form-control" rows="5" required></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Requirements" class="form-label">Requirements</label>
+                    <textarea asp-for="Requirements" class="form-control" rows="5" required></textarea>
+                    <span asp-validation-for="Requirements" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3 form-check">
+                    <input asp-for="IsActive" class="form-check-input" />
+                    <label asp-for="IsActive" class="form-check-label">Active Job Posting</label>
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <a asp-action="Index" class="btn btn-secondary me-md-2">
+                        <i class="fas fa-arrow-left me-1"></i> Back to List
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i> Create Job
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        <script>
+            // Set minimum date for expiry date picker
+            document.getElementById('ExpiryDate').min = new Date().toISOString().split('T')[0];
+
+            // Salary validation
+            document.querySelector('form').addEventListener('submit', function(e) {
+                const minSalary = parseFloat(document.getElementById('SalaryRangeMin').value);
+                const maxSalary = parseFloat(document.getElementById('SalaryRangeMax').value);
+
+                if (minSalary >= maxSalary) {
+                    alert('Maximum salary must be greater than minimum salary');
+                    e.preventDefault();
+                }
+            });
+        </script>
+    }
+}

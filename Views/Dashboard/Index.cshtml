@@ -3,42 +3,114 @@
     ViewData["Title"] = "Dashboard";
 }
 
-<h2>HireSphere Dashboard</h2>
+<div class="dashboard-container">
+    <h2 class="dashboard-header">
+        <i class="fas fa-tachometer-alt"></i> HireSphere Dashboard
+    </h2>
 
-<div class="row">
-    <div class="col-md-3">
-        <div class="card text-white bg-primary mb-3">
-            <div class="card-header">Total Jobs</div>
-            <div class="card-body">
-                <h4 class="card-title">@Model.TotalJobs</h4>
+    <div class="row stats-row">
+        <!-- Total Jobs Card -->
+        <div class="col-md-3">
+            <div class="stat-card bg-primary">
+                <div class="stat-icon">
+                    <i class="fas fa-briefcase"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>@Model.TotalJobs</h3>
+                    <p>Total Jobs</p>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="col-md-3">
-        <div class="card text-white bg-success mb-3">
-            <div class="card-header">Active Jobs</div>
-            <div class="card-body">
-                <h4 class="card-title">@Model.ActiveJobs</h4>
+        <!-- Active Jobs Card -->
+        <div class="col-md-3">
+            <div class="stat-card bg-success">
+                <div class="stat-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>@Model.ActiveJobs</h3>
+                    <p>Active Jobs</p>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="col-md-3">
-        <div class="card text-white bg-info mb-3">
-            <div class="card-header">Total Candidates</div>
-            <div class="card-body">
-                <h4 class="card-title">@Model.TotalCandidates</h4>
+        <!-- Total Candidates Card -->
+        <div class="col-md-3">
+            <div class="stat-card bg-info">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>@Model.TotalCandidates</h3>
+                    <p>Total Candidates</p>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="col-md-3">
-        <div class="card text-white bg-warning mb-3">
-            <div class="card-header">Total Applications</div>
-            <div class="card-body">
-                <h4 class="card-title">@Model.TotalApplications</h4>
+        <!-- Total Applications Card -->
+        <div class="col-md-3">
+            <div class="stat-card bg-warning">
+                <div class="stat-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>@Model.TotalApplications</h3>
+                    <p>Total Applications</p>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .dashboard-container {
+        padding: 20px;
+        background: #f8f9fa;
+        min-height: calc(100vh - 150px);
+    }
+
+    .dashboard-header {
+        color: #2c3e50;
+        margin-bottom: 30px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .stat-card {
+        color: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transition: transform 0.3s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .stat-icon {
+        font-size: 2.5rem;
+        float: left;
+        margin-right: 15px;
+    }
+
+    .stat-content h3 {
+        font-size: 2rem;
+        margin: 0;
+    }
+
+    .stat-content p {
+        margin: 5px 0 0;
+        opacity: 0.9;
+    }
+
+    .bg-primary { background: #3498db; }
+    .bg-success { background: #2ecc71; }
+    .bg-info { background: #1abc9c; }
+    .bg-warning { background: #f39c12; }
+</style>
+
+<!-- Add Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">

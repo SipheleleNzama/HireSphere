@@ -1,6 +1,61 @@
 ﻿@{
     ViewData["Title"] = "Privacy Policy";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<div class="privacy-container">
+    <h1 class="display-4">@ViewData["Title"]</h1>
+
+    <div class="privacy-content">
+        <section>
+            <h2><i class="fas fa-user-shield"></i> Data Collection</h2>
+            <p>We collect only the necessary information to provide our recruitment services. This includes:</p>
+            <ul>
+                <li>Candidate resumes and contact information</li>
+                <li>Job posting details from employers</li>
+                <li>Application history and matching data</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2><i class="fas fa-lock"></i> Data Protection</h2>
+            <p>All data is encrypted both in transit and at rest. We implement industry-standard security measures including:</p>
+            <ul>
+                <li>SSL/TLS encryption for all communications</li>
+                <li>Regular security audits</li>
+                <li>Role-based access control</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2><i class="fas fa-share-alt"></i> Data Sharing</h2>
+            <p>We do not sell your data. Information is only shared between candidates and employers as part of the recruitment process.</p>
+        </section>
+    </div>
+</div>
+
+<style>
+    .privacy-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .privacy-content section {
+        margin-bottom: 40px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .privacy-content h2 {
+        color: #2c3e50;
+        margin-bottom: 15px;
+    }
+
+    .privacy-content ul {
+        padding-left: 20px;
+    }
+
+    .privacy-content li {
+        margin-bottom: 8px;
+    }
+</style>

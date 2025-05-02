@@ -1,71 +1,146 @@
 ﻿using HireSphere.Data;
 using HireSphere.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace HireSphere.Controllers
 {
-  
     public class JobPostingsController : Controller
     {
-        private readonly ApplicationDbContext _context;
-        private readonly ILogger<JobPostingsController> _logger;
+        private readonly HireSphereDbContext _context;
 
-        public JobPostingsController(ApplicationDbContext context, ILogger<JobPostingsController> logger)
+        public JobPostingsController(HireSphereDbContext context)
         {
             _context = context;
-            _logger = logger;
         }
 
+        // GET: JobPostings
         public async Task<IActionResult> Index()
         {
-            var jobs = await _context.JobPostings
-                .Where(j => j.IsActive && j.ExpiryDate >= DateTime.Today)
-                .OrderByDescending(j => j.PostedDate)
-                .ToListAsync();
-
-            return View(jobs);
+            return View(await _context.JobPostings.ToListAsync());
         }
 
-        [HttpGet]
+        // GET: JobPostings/Details/5
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var jobPosting = await _context.JobPostings
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (jobPosting == null)
+            {
+                return NotFound();
+            }
+
+            return View(jobPosting);
+        }
+
+        // GET: JobPostings/Create
         public IActionResult Create()
         {
             return View();
         }
 
+        // POST: JobPostings/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(JobPosting model)
+        public async Task<IActionResult> Create(JobPosting jobPosting)
         {
             if (ModelState.IsValid)
             {
-                model.PostedDate = DateTime.Now;
-                model.IsActive = true;
-
-                _context.Add(model);
+                jobPosting.PostedDate = DateTime.Now;
+                _context.Add(jobPosting);
                 await _context.SaveChangesAsync();
-
                 return RedirectToAction(nameof(Index));
             }
-
-            return View(model);
+            return View(jobPosting);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> Details(int id)
+        // GET: JobPostings/Edit/5
+        public async Task<IActionResult> Edit(int? id)
         {
-            var job = await _context.JobPostings
-                .Include(j => j.Applications)
-                .ThenInclude(a => a.Candidate)
-                .FirstOrDefaultAsync(j => j.Id == id);
-
-            if (job == null)
+            if (id == null)
             {
                 return NotFound();
             }
 
-            return View(job);
+            var jobPosting = await _context.JobPostings.FindAsync(id);
+            if (jobPosting == null)
+            {
+                return NotFound();
+            }
+            return View(jobPosting);
+        }
+
+        // POST: JobPostings/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, JobPosting jobPosting)
+        {
+            if (id != jobPosting.Id)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(jobPosting);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!JobPostingExists(jobPosting.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            return View(jobPosting);
+        }
+
+        // GET: JobPostings/Delete/5
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var jobPosting = await _context.JobPostings
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (jobPosting == null)
+            {
+                return NotFound();
+            }
+
+            return View(jobPosting);
+        }
+
+        // POST: JobPostings/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var jobPosting = await _context.JobPostings.FindAsync(id);
+            _context.JobPostings.Remove(jobPosting);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        private bool JobPostingExists(int id)
+        {
+            return _context.JobPostings.Any(e => e.Id == id);
         }
     }
 }

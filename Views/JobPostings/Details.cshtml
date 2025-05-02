@@ -1,14 +1,46 @@
 ﻿@model JobPosting
 
-<div class="job-details">
-    <h2>@Model.Title</h2>
-    <!-- Keep all job details display -->
+@{
+    ViewData["Title"] = "Job Details";
+}
 
-    <h3>Apply for this Position</h3>
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h2 class="mb-0"><i class="fas fa-briefcase me-2"></i>@Model.Title</h2>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Location:</dt>
+                <dd class="col-sm-9">@Model.Location</dd>
 
-    <form asp-controller="Candidates" asp-action="Apply" method="post" enctype="multipart/form-data">
-        <!-- Keep the entire form as is -->
-    </form>
+                <dt class="col-sm-3">Salary Range:</dt>
+                <dd class="col-sm-9">@Model.SalaryRangeMin.ToString("C0") - @Model.SalaryRangeMax.ToString("C0")</dd>
 
-    <!-- REMOVE the authenticated-only applications table -->
+                <dt class="col-sm-3">Posted Date:</dt>
+                <dd class="col-sm-9">@Model.PostedDate.ToString("MMM dd, yyyy")</dd>
+
+                <dt class="col-sm-3">Expiry Date:</dt>
+                <dd class="col-sm-9">@Model.ExpiryDate.ToString("MMM dd, yyyy")</dd>
+
+                <dt class="col-sm-3">Status:</dt>
+                <dd class="col-sm-9">
+                    <span class="badge @(Model.IsActive ? "bg-success" : "bg-secondary")">
+                        @(Model.IsActive ? "Active" : "Closed")
+                    </span>
+                </dd>
+
+                <dt class="col-sm-3">Description:</dt>
+                <dd class="col-sm-9">@Model.Description</dd>
+
+                <dt class="col-sm-3">Requirements:</dt>
+                <dd class="col-sm-9">@Model.Requirements</dd>
+            </dl>
+        </div>
+        <div class="card-footer">
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back to List
+            </a>
+        </div>
+    </div>
 </div>

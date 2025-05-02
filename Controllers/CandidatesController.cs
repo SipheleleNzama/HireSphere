@@ -10,21 +10,21 @@ namespace HireSphere.Controllers
     
     public class CandidatesController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly HireSphereDbContext _context;
         private readonly FileUploadService _fileUploadService;
         private readonly AIService _aiService;
-        private readonly ILogger<CandidatesController> _logger;
+       
 
         public CandidatesController(
-            ApplicationDbContext context,
+            HireSphereDbContext context,
             FileUploadService fileUploadService,
-            AIService aiService,
-            ILogger<CandidatesController> logger)
+            AIService aiService)
+          
         {
             _context = context;
             _fileUploadService = fileUploadService;
             _aiService = aiService;
-            _logger = logger;
+            
         }
 
         [HttpPost]
@@ -74,7 +74,7 @@ namespace HireSphere.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error processing application");
+                
                 ModelState.AddModelError("", "There was an error processing your application. Please try again.");
                 return RedirectToAction("Details", "JobPostings", new { id = jobId });
             }

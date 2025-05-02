@@ -1,15 +1,16 @@
-﻿using HireSphere.Data;
-using HireSphere.Models;
+﻿// Services/JobPostingService.cs
+using HireSphere.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace HireSphere.Services
 {
     public class JobPostingService
     {
-        private readonly ApplicationDbContext _context;
+        private readonly HireSphereDbContext _context;
         private readonly ILogger<JobPostingService> _logger;
 
-        public JobPostingService(ApplicationDbContext context, ILogger<JobPostingService> logger)
+        public JobPostingService(HireSphereDbContext context, ILogger<JobPostingService> logger)
         {
             _context = context;
             _logger = logger;

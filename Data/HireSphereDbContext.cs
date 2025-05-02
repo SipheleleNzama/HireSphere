@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HireSphere.Data
 {
-    public class ApplicationDbContext : DbContext
+    public class HireSphereDbContext : DbContext
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        public HireSphereDbContext(DbContextOptions<HireSphereDbContext> options)
             : base(options)
         {
         }

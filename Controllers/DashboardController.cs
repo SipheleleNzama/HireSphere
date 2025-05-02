@@ -1,5 +1,4 @@
-﻿// Controllers/DashboardController.cs
-using HireSphere.Data;
+﻿using HireSphere.Data;  // Add this using directive
 using HireSphere.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -8,9 +7,9 @@ namespace HireSphere.Controllers
 {
     public class DashboardController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly HireSphereDbContext _context;  // Changed from ApplicationDbContext
 
-        public DashboardController(ApplicationDbContext context)
+        public DashboardController(HireSphereDbContext context)  // Changed parameter type
         {
             _context = context;
         }
