@@ -19,6 +19,7 @@ builder.Services.AddDbContext<HireSphereDbContext>(options =>
 builder.Services.AddScoped<JobPostingService>();
 builder.Services.AddScoped<AIService>();
 builder.Services.AddScoped<FileUploadService>();
+builder.Services.AddScoped<MockAIService>();
 
 // Configure file upload limits
 builder.Services.Configure<IISServerOptions>(options =>

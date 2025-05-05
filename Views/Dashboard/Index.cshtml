@@ -1,109 +1,681 @@
-﻿@model HireSphere.Models.DashboardViewModel
+﻿@model DashboardViewModel
+
 @{
-    ViewData["Title"] = "Dashboard";
+    ViewData["Title"] = "HireSphere Dashboard";
 }
 
 <div class="dashboard-container">
-    <h2 class="dashboard-header">
-        <i class="fas fa-tachometer-alt"></i> HireSphere Dashboard
-    </h2>
+    <!-- Header -->
+    <div class="dashboard-header">
+        <h1><i class="fas fa-tachometer-alt me-3"></i>@ViewData["Title"]</h1>
+        <div class="last-updated">
+            <i class="fas fa-sync-alt me-1"></i> Last updated: @DateTime.Now.ToString("MMM dd, yyyy h:mm tt")
+        </div>
+    </div>
 
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="stats-card bg-primary text-white">
-                <div class="stats-icon">
-                    <i class="fas fa-briefcase"></i>
-                </div>
-                <div class="stats-content">
-                    <h3>@Model.TotalJobs</h3>
-                    <p>Total Jobs</p>
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card stat-primary">
+            <div class="stat-icon">
+                <i class="fas fa-briefcase"></i>
+            </div>
+            <div class="stat-content">
+                <h2>@Model.TotalJobs</h2>
+                <p>Total Jobs</p>
+                <div class="stat-trend up">
+                    <i class="fas fa-arrow-up"></i> 12% from last month
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="stats-card bg-success text-white">
-                <div class="stats-icon">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <div class="stats-content">
-                    <h3>@Model.ActiveJobs</h3>
-                    <p>Active Jobs</p>
+
+        <div class="stat-card stat-success">
+            <div class="stat-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-content">
+                <h2>@Model.ActiveJobs</h2>
+                <p>Active Jobs</p>
+                <div class="stat-trend up">
+                    <i class="fas fa-arrow-up"></i> 5% from last week
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="stats-card bg-info text-white">
-                <div class="stats-icon">
-                    <i class="fas fa-users"></i>
-                </div>
-                <div class="stats-content">
-                    <h3>@Model.TotalCandidates</h3>
-                    <p>Candidates</p>
+
+        <div class="stat-card stat-info">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content">
+                <h2>@Model.TotalCandidates</h2>
+                <p>Total Candidates</p>
+                <div class="stat-trend up">
+                    <i class="fas fa-arrow-up"></i> 8% from last month
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="stats-card bg-warning text-white">
-                <div class="stats-icon">
-                    <i class="fas fa-file-alt"></i>
-                </div>
-                <div class="stats-content">
-                    <h3>@Model.TotalApplications</h3>
-                    <p>Applications</p>
+
+        <div class="stat-card stat-warning">
+            <div class="stat-icon">
+                <i class="fas fa-file-alt"></i>
+            </div>
+            <div class="stat-content">
+                <h2>@Model.TotalApplications</h2>
+                <p>Total Applications</p>
+                <div class="stat-trend down">
+                    <i class="fas fa-arrow-down"></i> 3% from last week
                 </div>
             </div>
         </div>
     </div>
-<style>
-    .dashboard-container {
-        padding: 20px;
-        background: #f8f9fa;
-        min-height: calc(100vh - 150px);
-    }
 
-    .dashboard-header {
-        color: #2c3e50;
-        margin-bottom: 30px;
-        padding-bottom: 15px;
-        border-bottom: 1px solid #eee;
-    }
+    <!-- Main Content Grid -->
+    <div class="dashboard-content">
+        <!-- Applications Trend Chart -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h3><i class="fas fa-chart-line me-2"></i>Applications Trend</h3>
+                <div class="time-filter">
+                    <button class="active" data-period="7">7D</button>
+                    <button data-period="30">30D</button>
+                    <button data-period="90">90D</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="line-chart-container" class="chart-container">
+                    <canvas id="applicationsChart"></canvas>
+                </div>
+                <div class="chart-legend">
+                    <span><i class="fas fa-square text-primary"></i> This Period</span>
+                    <span><i class="fas fa-square text-muted"></i> Previous Period</span>
+                </div>
+            </div>
+        </div>
 
-    .stats-card {
-        border-radius: 10px;
-        padding: 20px;
-        display: flex;
-        align-items: center;
-        transition: all 0.3s;
-        cursor: pointer;
-        height: 100%;
-    }
+        <!-- Recent Activity -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h3><i class="fas fa-clock me-2"></i>Recent Activity</h3>
+            </div>
+            <div class="card-body">
+                <ul class="activity-feed">
+                    <li>
+                        <div class="feed-item">
+                            <div class="feed-icon bg-success">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="feed-content">
+                                <strong>John Doe</strong> was hired for <strong>Frontend Developer</strong>
+                                <small>2 hours ago</small>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="feed-item">
+                            <div class="feed-icon bg-primary">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <div class="feed-content">
+                                <strong>Sarah Smith</strong> applied for <strong>UX Designer</strong>
+                                <small>5 hours ago</small>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="feed-item">
+                            <div class="feed-icon bg-info">
+                                <i class="fas fa-comment"></i>
+                            </div>
+                            <div class="feed-content">
+                                <strong>Interview</strong> scheduled with <strong>Michael Brown</strong>
+                                <small>Yesterday</small>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="feed-item">
+                            <div class="feed-icon bg-warning">
+                                <i class="fas fa-exclamation"></i>
+                            </div>
+                            <div class="feed-content">
+                                <strong>3 applications</strong> need review
+                                <small>Yesterday</small>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="feed-item">
+                            <div class="feed-icon bg-danger">
+                                <i class="fas fa-times"></i>
+                            </div>
+                            <div class="feed-content">
+                                <strong>Jane Wilson</strong> rejected offer for <strong>Backend Developer</strong>
+                                <small>2 days ago</small>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
 
-     .stats-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        <!-- Job Status Chart -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h3><i class="fas fa-chart-pie me-2"></i>Job Status</h3>
+            </div>
+            <div class="card-body">
+                <div id="doughnut-chart-container" class="chart-container">
+                    <canvas id="jobStatusChart"></canvas>
+                </div>
+                <div class="chart-legend">
+                    <span><i class="fas fa-circle text-success"></i> Active (@Model.ActiveJobsPercentage%)</span>
+                    <span><i class="fas fa-circle text-secondary"></i> Closed (@Model.ClosedJobsPercentage%)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="dashboard-card quick-actions">
+            <div class="card-header">
+                <h3><i class="fas fa-bolt me-2"></i>Quick Actions</h3>
+            </div>
+            <div class="card-body">
+                <div class="actions-grid">
+                    <a asp-controller="JobPostings" asp-action="Create" class="action-item">
+                        <div class="action-icon bg-primary">
+                            <i class="fas fa-plus"></i>
+                        </div>
+                        <span>Post New Job</span>
+                    </a>
+                    <a asp-controller="Candidates" asp-action="Create" class="action-item">
+                        <div class="action-icon bg-success">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <span>Add Candidate</span>
+                    </a>
+                    <a href="#" class="action-item">
+                        <div class="action-icon bg-info">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <span>Send Bulk Email</span>
+                    </a>
+                    <a href="#" class="action-item">
+                        <div class="action-icon bg-warning">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <span>Schedule Interview</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        /* Dashboard Layout */
+        .dashboard-container {
+            padding: 2rem;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            box-sizing: border-box;
         }
 
-    .stats-icon {
-        font-size: 2.5rem;
-        margin-right: 20px;
-        opacity: 0.8;
-    }
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
 
-    .stats-content h3 {
-        font-size: 2rem;
-        margin-bottom: 5px;
-    }
+            .dashboard-header h1 {
+                color: #2c3e50;
+                font-weight: 700;
+                margin: 0;
+            }
 
-    .stats-content p {
-        opacity: 0.8;
-        margin-bottom: 0;
-    }
+        .last-updated {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
 
-    .bg-primary { background: #3498db; }
-    .bg-success { background: #2ecc71; }
-    .bg-info { background: #1abc9c; }
-    .bg-warning { background: #f39c12; }
-</style>
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
 
-<!-- Add Font Awesome for icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex;
+            transition: all 0.3s ease;
+        }
+
+            .stat-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            }
+
+        .stat-primary {
+            border-top: 4px solid #3498db;
+        }
+
+        .stat-success {
+            border-top: 4px solid #2ecc71;
+        }
+
+        .stat-info {
+            border-top: 4px solid #1abc9c;
+        }
+
+        .stat-warning {
+            border-top: 4px solid #f39c12;
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+            margin-right: 1.5rem;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-primary .stat-icon {
+            background: #3498db;
+        }
+
+        .stat-success .stat-icon {
+            background: #2ecc71;
+        }
+
+        .stat-info .stat-icon {
+            background: #1abc9c;
+        }
+
+        .stat-warning .stat-icon {
+            background: #f39c12;
+        }
+
+        .stat-content h2 {
+            font-size: 2rem;
+            margin: 0 0 0.25rem 0;
+            color: #2c3e50;
+        }
+
+        .stat-content p {
+            color: #7f8c8d;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-trend {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+            .stat-trend.up {
+                background-color: rgba(46, 204, 113, 0.1);
+                color: #2ecc71;
+            }
+
+            .stat-trend.down {
+                background-color: rgba(231, 76, 60, 0.1);
+                color: #e74c3c;
+            }
+
+        /* Dashboard Content Grid */
+        .dashboard-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 400px;
+        }
+
+        .card-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+            .card-header h3 {
+                font-size: 1.25rem;
+                margin: 0;
+                color: #2c3e50;
+            }
+
+        .time-filter button {
+            border: none;
+            background: none;
+            padding: 0.25rem 0.5rem;
+            margin-left: 0.5rem;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+            .time-filter button.active {
+                background-color: #3498db;
+                color: white;
+            }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .chart-placeholder {
+            position: relative;
+            height: 250px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chart-legend {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            font-size: 0.8rem;
+        }
+
+        /* Activity Feed */
+        .activity-feed {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+            .activity-feed li {
+                padding: 0.75rem 0;
+                border-bottom: 1px solid #eee;
+            }
+
+                .activity-feed li:last-child {
+                    border-bottom: none;
+                }
+
+        .feed-item {
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .feed-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .feed-content {
+            flex-grow: 1;
+        }
+
+            .feed-content small {
+                display: block;
+                color: #7f8c8d;
+                font-size: 0.8rem;
+                margin-top: 0.25rem;
+            }
+
+        /* Quick Actions */
+        .quick-actions .card-body {
+            padding: 1rem;
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .action-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            color: #2c3e50;
+            text-decoration: none;
+        }
+
+            .action-item:hover {
+                background-color: #f8f9fa;
+                transform: translateY(-3px);
+            }
+
+        .action-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.5rem;
+            color: white;
+            font-size: 1.25rem;
+        }
+
+        .action-item span {
+            font-size: 0.9rem;
+        }
+
+        @@media (max-width: 768px) {
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .last-updated {
+                margin-top: 0.5rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard-content {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard-card {
+                min-height: auto; /* Remove fixed height on mobile */
+            }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Applications Trend Chart
+            const applicationsCtx = document.getElementById('applicationsChart').getContext('2d');
+            const applicationsChart = new Chart(applicationsCtx, {
+            type: 'line',
+                data: {
+                    labels: @Html.Raw(Json.Serialize(Model.ApplicationTrendLabels)),
+                    datasets: [
+                        {
+                            label: 'Current Period',
+                            data: @Html.Raw(Json.Serialize(Model.CurrentApplicationTrendData)),
+                            borderColor: '#3498db',
+                            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                            tension: 0.3,
+                            fill: true,
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'Previous Period',
+                            data: @Html.Raw(Json.Serialize(Model.PreviousApplicationTrendData)),
+                            borderColor: '#95a5a6',
+                            backgroundColor: 'rgba(149, 165, 166, 0.05)',
+                            borderDash: [5, 5],
+                            tension: 0.3,
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                drawBorder: false
+                            },
+                            ticks: {
+                                stepSize: 5
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Job Status Chart
+            const jobStatusCtx = document.getElementById('jobStatusChart').getContext('2d');
+            const jobStatusChart = new Chart(jobStatusCtx, {
+            type: 'doughnut',
+                data: {
+                    labels: ['Active', 'Closed', 'Draft'],
+                    datasets: [{
+                        data: [
+        @Model.ActiveJobsCount,
+        @Model.ClosedJobsCount,
+        @Model.DraftJobsCount
+                        ],
+                        backgroundColor: [
+                            '#2ecc71',
+                            '#95a5a6',
+                            '#f39c12'
+                        ],
+                        borderWidth: 0,
+                        cutout: '70%'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Time filter functionality
+            document.querySelectorAll('.time-filter button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const period = this.dataset.period;
+                    document.querySelector('.time-filter button.active').classList.remove('active');
+                    this.classList.add('active');
+
+                    // In a real implementation, you would fetch new data here
+                    // For now, we'll just simulate it with sample data
+                    updateChartData(period);
+                });
+            });
+
+            function updateChartData(period) {
+                // This would be replaced with actual API calls in a real implementation
+                console.log(`Fetching data for ${period} days period`);
+
+                // Sample data for demonstration
+                let labels, currentData, previousData;
+
+                if (period === '7') {
+                    labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                    currentData = [12, 19, 15, 22, 18, 10, 8];
+                    previousData = [10, 14, 12, 18, 15, 9, 6];
+                } else if (period === '30') {
+                    labels = [];
+                    currentData = [];
+                    previousData = [];
+                    for (let i = 1; i <= 4; i++) {
+                        labels.push(`Week ${i}`);
+                        currentData.push(Math.floor(Math.random() * 50) + 30);
+                        previousData.push(Math.floor(Math.random() * 40) + 20);
+                    }
+                } else {
+                    labels = [];
+                    currentData = [];
+                    previousData = [];
+                    for (let i = 1; i <= 3; i++) {
+                        labels.push(`Month ${i}`);
+                        currentData.push(Math.floor(Math.random() * 150) + 100);
+                        previousData.push(Math.floor(Math.random() * 120) + 80);
+                    }
+                }
+
+                // Update the chart
+                applicationsChart.data.labels = labels;
+                applicationsChart.data.datasets[0].data = currentData;
+                applicationsChart.data.datasets[1].data = previousData;
+                applicationsChart.update();
+            }
+
+            // Quick action animations
+            document.querySelectorAll('.action-item').forEach(item => {
+                item.addEventListener('mouseenter', function() {
+                    this.querySelector('.action-icon').style.transform = 'scale(1.1)';
+                });
+                item.addEventListener('mouseleave', function() {
+                    this.querySelector('.action-icon').style.transform = 'scale(1)';
+                });
+            });
+        });
+    </script>
+}

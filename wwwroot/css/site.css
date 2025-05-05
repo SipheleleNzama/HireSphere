@@ -206,3 +206,46 @@ a, .btn, .card, .nav-link {
     padding: 10px 25px;
     font-weight: 500;
 }
+
+.chart-container {
+    position: relative;
+    height: 250px; /* Fixed height for consistency */
+    width: 100%;
+    min-height: 250px; /* Ensure it never collapses */
+}
+
+/* Add this to your existing chart-placeholder style */
+.chart-placeholder {
+    position: relative;
+    height: 250px;
+    width: 100%;
+}
+
+/* Update the chart legend to handle more items */
+.chart-legend {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+    font-size: 0.8rem;
+    flex-wrap: wrap;
+}
+/* Card Body Adjustments */
+.card-body {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Specific Chart Adjustments */
+#line-chart-container {
+    height: 250px;
+    margin-bottom: 1rem;
+}
+
+#doughnut-chart-container {
+    height: 220px;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+}

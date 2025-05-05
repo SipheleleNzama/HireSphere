@@ -7,26 +7,134 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HireSphere.Controllers
 {
-    
     public class CandidatesController : Controller
     {
         private readonly HireSphereDbContext _context;
         private readonly FileUploadService _fileUploadService;
         private readonly AIService _aiService;
-       
 
         public CandidatesController(
             HireSphereDbContext context,
             FileUploadService fileUploadService,
             AIService aiService)
-          
         {
             _context = context;
             _fileUploadService = fileUploadService;
             _aiService = aiService;
-            
         }
 
+        // GET: Candidates
+        public async Task<IActionResult> Index(string searchString, string sortOrder)
+        {
+            ViewData["NameSortParm"] = string.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
+            ViewData["DateSortParm"] = sortOrder == "Date" ? "date_desc" : "Date";
+            ViewData["CurrentFilter"] = searchString;
+
+            var candidates = from c in _context.Candidates
+                             select c;
+
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                candidates = candidates.Where(c =>
+                    c.FirstName.Contains(searchString) ||
+                    c.LastName.Contains(searchString) ||
+                    c.Email.Contains(searchString) ||
+                    c.Skills.Contains(searchString));
+            }
+
+            switch (sortOrder)
+            {
+                case "name_desc":
+                    candidates = candidates.OrderByDescending(c => c.LastName);
+                    break;
+                case "Date":
+                    candidates = candidates.OrderBy(c => c.Applications.Max(a => a.ApplicationDate));
+                    break;
+                case "date_desc":
+                    candidates = candidates.OrderByDescending(c => c.Applications.Max(a => a.ApplicationDate));
+                    break;
+                default:
+                    candidates = candidates.OrderBy(c => c.LastName);
+                    break;
+            }
+
+            return View(await candidates.AsNoTracking().ToListAsync());
+        }
+
+        // GET: Candidates/Create
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        // POST: Candidates/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([Bind("Id,FirstName,LastName,Email,Phone,Skills,ExpectedSalary")] Candidate candidate, IFormFile resumeFile)
+        {
+            if (ModelState.IsValid)
+            {
+                if (resumeFile != null && resumeFile.Length > 0)
+                {
+                    try
+                    {
+                        // Upload resume
+                        var resumePath = await _fileUploadService.UploadResumeAsync(resumeFile, candidate.Id);
+                        candidate.ResumePath = resumePath;
+
+                        // Extract skills from resume if Skills field is empty
+                        if (string.IsNullOrEmpty(candidate.Skills))
+                        {
+                            var resumeText = await _fileUploadService.ExtractTextFromResumeAsync(resumePath);
+                            var skills = await _aiService.ExtractKeyPhrasesAsync(resumeText);
+                            candidate.Skills = string.Join(", ", skills.Keys);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        ModelState.AddModelError("resumeFile", $"Error processing resume: {ex.Message}");
+                        return View(candidate);
+                    }
+                }
+
+                _context.Add(candidate);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            return View(candidate);
+        }
+
+        // GET: Candidates/View/5
+        public async Task<IActionResult> View(int id)
+        {
+            var candidate = await _context.Candidates
+                .Include(c => c.Applications)
+                .ThenInclude(a => a.JobPosting)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (candidate == null)
+            {
+                return NotFound();
+            }
+
+            // Get AI analysis if resume exists
+            if (!string.IsNullOrEmpty(candidate.ResumePath))
+            {
+                try
+                {
+                    var resumeText = await _fileUploadService.ExtractTextFromResumeAsync(candidate.ResumePath);
+                    ViewBag.ResumeAnalysis = await _aiService.AnalyzeResume(resumeText);
+                }
+                catch
+                {
+                    // Analysis failed, continue without it
+                }
+            }
+
+            return View(candidate);
+        }
+
+        // POST: Candidates/Apply
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Apply(int jobId, IFormFile resume, Candidate candidate)
@@ -61,7 +169,9 @@ namespace HireSphere.Controllers
                         CandidateId = candidate.Id,
                         ApplicationDate = DateTime.Now,
                         Status = ApplicationStatus.Submitted,
-                        MatchScore = (decimal)await _aiService.CalculateMatchScore(job.Description + " " + job.Requirements, resumeText)
+                        MatchScore = (decimal)await _aiService.CalculateMatchScore(
+                            job.Description + " " + job.Requirements,
+                            resumeText)
                     };
 
                     _context.Applications.Add(application);
@@ -74,25 +184,115 @@ namespace HireSphere.Controllers
             }
             catch (Exception ex)
             {
-                
+                // Log the error
                 ModelState.AddModelError("", "There was an error processing your application. Please try again.");
                 return RedirectToAction("Details", "JobPostings", new { id = jobId });
             }
         }
 
-        public async Task<IActionResult> View(int id)
+        // GET: Candidates/Edit/5
+        public async Task<IActionResult> Edit(int? id)
         {
-            var candidate = await _context.Candidates
-                .Include(c => c.Applications)
-                .ThenInclude(a => a.JobPosting)
-                .FirstOrDefaultAsync(c => c.Id == id);
+            if (id == null)
+            {
+                return NotFound();
+            }
 
+            var candidate = await _context.Candidates.FindAsync(id);
+            if (candidate == null)
+            {
+                return NotFound();
+            }
+            return View(candidate);
+        }
+
+        // POST: Candidates/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("Id,FirstName,LastName,Email,Phone,Skills,ExpectedSalary,ResumePath")] Candidate candidate, IFormFile resumeFile)
+        {
+            if (id != candidate.Id)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    if (resumeFile != null && resumeFile.Length > 0)
+                    {
+                        // Delete old resume if exists
+                        if (!string.IsNullOrEmpty(candidate.ResumePath))
+                        {
+                            await _fileUploadService.DeleteResumeAsync(candidate.ResumePath);
+                        }
+
+                        // Upload new resume
+                        var resumePath = await _fileUploadService.UploadResumeAsync(resumeFile, candidate.Id);
+                        candidate.ResumePath = resumePath;
+                    }
+
+                    _context.Update(candidate);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!CandidateExists(candidate.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            return View(candidate);
+        }
+
+        // GET: Candidates/Delete/5
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var candidate = await _context.Candidates
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (candidate == null)
             {
                 return NotFound();
             }
 
             return View(candidate);
+        }
+
+        // POST: Candidates/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var candidate = await _context.Candidates.FindAsync(id);
+            if (candidate != null)
+            {
+                // Delete associated resume
+                if (!string.IsNullOrEmpty(candidate.ResumePath))
+                {
+                    await _fileUploadService.DeleteResumeAsync(candidate.ResumePath);
+                }
+
+                _context.Candidates.Remove(candidate);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Index));
+        }
+
+        private bool CandidateExists(int id)
+        {
+            return _context.Candidates.Any(e => e.Id == id);
         }
     }
 }

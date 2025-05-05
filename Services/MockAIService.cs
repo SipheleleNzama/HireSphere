@@ -5,20 +5,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+
 namespace HireSphere.Services
 {
-    public class AIService
+    public class MockAIService 
     {
-        private readonly ILogger<AIService> _logger;
+        private readonly ILogger<MockAIService> _logger;
         private readonly double _minimumPhraseScore;
 
-        public AIService(IConfiguration configuration, ILogger<AIService> logger)
+        public MockAIService(IConfiguration configuration, ILogger<MockAIService> logger)
         {
             _logger = logger;
             _minimumPhraseScore = configuration.GetValue<double>("AzureAI:MinimumPhraseScore", 0.05);
-
-            // Remove the Azure Text Analytics client initialization
-            _logger.LogInformation("Using mock AI service implementation");
         }
 
         public async Task<Dictionary<string, double>> ExtractKeyPhrasesAsync(string text)
@@ -30,7 +28,7 @@ namespace HireSphere.Services
                 return new Dictionary<string, double>();
             }
 
-            // Simple mock implementation - extract words as "key phrases"
+            // Mock implementation - extract words as "key phrases"
             var words = text.Split(new[] { ' ', '.', ',', ';', '!', '?' },
                                  StringSplitOptions.RemoveEmptyEntries)
                            .Where(w => w.Length > 3)

@@ -1,0 +1,46 @@
+﻿@model HireSphere.Models.Candidate
+
+@{
+    ViewData["Title"] = "Candidate Details";
+}
+
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h2 class="mb-0"><i class="fas fa-user me-2"></i>@ViewData["Title"]</h2>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Full Name</dt>
+                <dd class="col-sm-9">@Model.FirstName @Model.LastName</dd>
+
+                <dt class="col-sm-3">Email</dt>
+                <dd class="col-sm-9">@Model.Email</dd>
+
+                <dt class="col-sm-3">Phone</dt>
+                <dd class="col-sm-9">@Model.Phone</dd>
+
+                <dt class="col-sm-3">Skills</dt>
+                <dd class="col-sm-9">@Model.Skills</dd>
+
+                <dt class="col-sm-3">Expected Salary</dt>
+                <dd class="col-sm-9">@Model.ExpectedSalary.ToString("C0")</dd>
+
+                @if (!string.IsNullOrEmpty(Model.ResumePath))
+                {
+                    <dt class="col-sm-3">Resume</dt>
+                    <dd class="col-sm-9">
+                        <a href="@Model.ResumePath" target="_blank" class="btn btn-outline-primary">
+                            <i class="fas fa-file-download me-1"></i> Download Resume
+                        </a>
+                    </dd>
+                }
+            </dl>
+
+            <div class="mt-4">
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary me-2">Edit</a>
+                <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+            </div>
+        </div>
+    </div>
+</div>
