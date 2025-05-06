@@ -4,6 +4,14 @@ using HireSphere.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+
+
 
 namespace HireSphere.Controllers
 {
@@ -42,21 +50,13 @@ namespace HireSphere.Controllers
                     c.Skills.Contains(searchString));
             }
 
-            switch (sortOrder)
+            candidates = sortOrder switch
             {
-                case "name_desc":
-                    candidates = candidates.OrderByDescending(c => c.LastName);
-                    break;
-                case "Date":
-                    candidates = candidates.OrderBy(c => c.Applications.Max(a => a.ApplicationDate));
-                    break;
-                case "date_desc":
-                    candidates = candidates.OrderByDescending(c => c.Applications.Max(a => a.ApplicationDate));
-                    break;
-                default:
-                    candidates = candidates.OrderBy(c => c.LastName);
-                    break;
-            }
+                "name_desc" => candidates.OrderByDescending(c => c.LastName),
+                "Date" => candidates.OrderBy(c => c.Applications.Max(a => a.ApplicationDate)),
+                "date_desc" => candidates.OrderByDescending(c => c.Applications.Max(a => a.ApplicationDate)),
+                _ => candidates.OrderBy(c => c.LastName),
+            };
 
             return View(await candidates.AsNoTracking().ToListAsync());
         }
@@ -107,15 +107,20 @@ namespace HireSphere.Controllers
         // GET: Candidates/View/5
         public async Task<IActionResult> View(int id)
         {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
             var candidate = await _context.Candidates
-                .Include(c => c.Applications)
-                .ThenInclude(a => a.JobPosting)
-                .FirstOrDefaultAsync(c => c.Id == id);
+                 .Include(c => c.Applications)
+                 .ThenInclude(a => a.JobPosting)
+                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (candidate == null)
             {
                 return NotFound();
-            }
+            } 
 
             // Get AI analysis if resume exists
             if (!string.IsNullOrEmpty(candidate.ResumePath))

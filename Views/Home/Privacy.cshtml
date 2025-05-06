@@ -2,60 +2,95 @@
     ViewData["Title"] = "Privacy Policy";
 }
 
-<div class="privacy-container">
-    <h1 class="display-4">@ViewData["Title"]</h1>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="list-group">
+                <a href="#privacy" class="list-group-item list-group-item-action active">Privacy Policy</a>
+                <a href="#terms" class="list-group-item list-group-item-action">Terms of Service</a>
+                <a href="#cookies" class="list-group-item list-group-item-action">Cookie Policy</a>
+            </div>
+        </div>
 
-    <div class="privacy-content">
-        <section>
-            <h2><i class="fas fa-user-shield"></i> Data Collection</h2>
-            <p>We collect only the necessary information to provide our recruitment services. This includes:</p>
-            <ul>
-                <li>Candidate resumes and contact information</li>
-                <li>Job posting details from employers</li>
-                <li>Application history and matching data</li>
-            </ul>
-        </section>
+        <div class="col-md-9">
+            <!-- Privacy Policy Section -->
+            <section id="privacy" class="mb-5">
+                <h2 class="mb-4">Privacy Policy</h2>
+                <p>Last updated: @DateTime.Now.ToString("MMMM dd, yyyy")</p>
 
-        <section>
-            <h2><i class="fas fa-lock"></i> Data Protection</h2>
-            <p>All data is encrypted both in transit and at rest. We implement industry-standard security measures including:</p>
-            <ul>
-                <li>SSL/TLS encryption for all communications</li>
-                <li>Regular security audits</li>
-                <li>Role-based access control</li>
-            </ul>
-        </section>
+                <h4>1. Information We Collect</h4>
+                <p>We collect information you provide directly to us, including when you create an account, submit applications, or contact us.</p>
 
-        <section>
-            <h2><i class="fas fa-share-alt"></i> Data Sharing</h2>
-            <p>We do not sell your data. Information is only shared between candidates and employers as part of the recruitment process.</p>
-        </section>
+                <h4>2. How We Use Your Information</h4>
+                <p>We use the information we collect to provide and improve our services, communicate with you, and ensure platform security.</p>
+
+                <!-- Add more privacy policy content as needed -->
+            </section>
+
+            <!-- Terms of Service Section -->
+            <section id="terms" class="mb-5">
+                <h2 class="mb-4">Terms of Service</h2>
+                <p>Effective: @DateTime.Now.ToString("MMMM dd, yyyy")</p>
+
+                <h4>1. Acceptance of Terms</h4>
+                <p>By accessing or using HireSphere, you agree to be bound by these Terms of Service.</p>
+
+                <h4>2. User Responsibilities</h4>
+                <p>You agree to provide accurate information and not to misuse the platform or its services.</p>
+
+                <!-- Add more terms content as needed -->
+            </section>
+
+            <!-- Cookie Policy Section -->
+            <section id="cookies">
+                <h2 class="mb-4">Cookie Policy</h2>
+                <p>Last updated: @DateTime.Now.ToString("MMMM dd, yyyy")</p>
+
+                <h4>1. What Are Cookies</h4>
+                <p>Cookies are small text files stored on your device when you visit our website.</p>
+
+                <h4>2. How We Use Cookies</h4>
+                <p>We use cookies to remember your preferences, analyze traffic, and improve user experience.</p>
+
+                <!-- Add more cookie policy content as needed -->
+            </section>
+        </div>
     </div>
 </div>
 
 <style>
-    .privacy-container {
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 40px 20px;
+    .list-group-item.active {
+        background-color: #3498db;
+        border-color: #3498db;
     }
 
-    .privacy-content section {
-        margin-bottom: 40px;
-        padding-bottom: 20px;
-        border-bottom: 1px solid #eee;
-    }
-
-    .privacy-content h2 {
-        color: #2c3e50;
-        margin-bottom: 15px;
-    }
-
-    .privacy-content ul {
-        padding-left: 20px;
-    }
-
-    .privacy-content li {
-        margin-bottom: 8px;
+    section {
+        scroll-margin-top: 80px; /* Account for fixed header */
     }
 </style>
+
+<script>
+    // Highlight current section in sidebar when scrolling
+    document.addEventListener('DOMContentLoaded', function() {
+        const sections = document.querySelectorAll('section');
+        const navItems = document.querySelectorAll('.list-group-item');
+
+        window.addEventListener('scroll', function() {
+            let current = '';
+
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navItems.forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('href') === '#' + current) {
+                    item.classList.add('active');
+                }
+            });
+        });
+    });
+</script>
