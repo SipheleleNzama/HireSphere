@@ -2,10 +2,11 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore; // Add this
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Identity.Client;
 
 namespace HireSphere.Data
 {
-    public class HireSphereDbContext : IdentityDbContext<IdentityUser, IdentityRole, string> // Modified this line
+    public class HireSphereDbContext : IdentityDbContext<ApplicationUser> // Modified this line
     {
         public HireSphereDbContext(DbContextOptions<HireSphereDbContext> options)
             : base(options)

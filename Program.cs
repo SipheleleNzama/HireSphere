@@ -77,14 +77,16 @@ using (var scope = app.Services.CreateScope())
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-    // Create admin role if it doesn't exist
-    if (!await roleManager.RoleExistsAsync("Administrator"))
+    // Create admin role 
+    if (!await roleManager.RoleExistsAsync("Admin"))
     {
-        await roleManager.CreateAsync(new IdentityRole("Administrator"));
+        await roleManager.CreateAsync(new IdentityRole("Admin"));
     }
 
     // Create admin user
-    var adminUser = await userManager.FindByEmailAsync("admin@hiresphere.com");
+    var adminEmail = "admin@hiresphere.com";
+    var adminUser = await userManager.FindByEmailAsync(adminEmail);
+
     if (adminUser == null)
     {
         adminUser = new ApplicationUser
@@ -93,10 +95,15 @@ using (var scope = app.Services.CreateScope())
             Email = "anelenzama07@gmail.com",
             FirstName = "Anele",
             LastName = "Nzama"
+            //EmailConfirmed = true  // Important if using email confirmation
         };
 
-        await userManager.CreateAsync(adminUser, "Admin@123");
-        await userManager.AddToRoleAsync(adminUser, "Administrator");
+        var createResult = await userManager.CreateAsync(adminUser, "SecurePassword123!");
+
+        if (createResult.Succeeded)
+        {
+            await userManager.AddToRoleAsync(adminUser, "Admin");
+        }
     }
 }
 
