@@ -50,5 +50,23 @@
         </div>
 
     </div> 
+    <div class="mt-4">
+        <h3>AI-Powered Candidate Matching</h3>
 
+        @if (ViewBag.CandidateMatches != null)
+        {
+            <div class="row">
+                @foreach (var match in ViewBag.CandidateMatches)
+                {
+                    <div class="col-md-6 mb-4">
+                        @await Component.InvokeAsync("MatchAnalysis", match)
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info">No candidate analysis available</div>
+        }
+    </div>
 </div> 

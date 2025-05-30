@@ -1,85 +1,77 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using HireSphere.Models.AI;
 
 namespace HireSphere.Services
 {
     public class AIService
     {
         private readonly ILogger<AIService> _logger;
-        private readonly double _minimumPhraseScore;
+        private readonly double _minimumSkillScore;
 
-        public AIService(IConfiguration configuration, ILogger<AIService> logger)
+        public AIService(ILogger<AIService> logger, IConfiguration configuration)
         {
             _logger = logger;
-            _minimumPhraseScore = configuration.GetValue<double>("AzureAI:MinimumPhraseScore", 0.05);
-
-            // Remove the Azure Text Analytics client initialization
-            _logger.LogInformation("Using mock AI service implementation");
+            _minimumSkillScore = configuration.GetValue<double>("AI:MinimumSkillScore", 0.1);
         }
 
         public async Task<Dictionary<string, double>> ExtractKeyPhrasesAsync(string text)
         {
-            await Task.Delay(100); // Simulate processing time
-
+            // Mock implementation - in production, replace with actual AI service
             if (string.IsNullOrWhiteSpace(text))
-            {
                 return new Dictionary<string, double>();
-            }
 
-            // Simple mock implementation - extract words as "key phrases"
             var words = text.Split(new[] { ' ', '.', ',', ';', '!', '?' },
-                                 StringSplitOptions.RemoveEmptyEntries)
-                           .Where(w => w.Length > 3)
-                           .Select(w => w.ToLower());
+                                StringSplitOptions.RemoveEmptyEntries)
+                          .Where(w => w.Length > 3)
+                          .Select(w => w.ToLower());
 
             var totalWords = words.Count();
-            var phraseScores = words
+            return words
                 .GroupBy(w => w)
-                .ToDictionary(
-                    g => g.Key,
-                    g => (double)g.Count() / totalWords)
-                .Where(p => p.Value >= _minimumPhraseScore)
+                .ToDictionary(g => g.Key, g => (double)g.Count() / totalWords)
+                .Where(p => p.Value >= _minimumSkillScore)
                 .ToDictionary(p => p.Key, p => p.Value);
-
-            return phraseScores;
         }
 
-        public async Task<double> CalculateMatchScore(string jobDescription, string resumeText)
+        public async Task<MatchAnalysisResult> AnalyzeJobMatch(string jobDescription, string resumeText)
         {
-            await Task.Delay(200); // Simulate processing time
-
-            // Simple mock implementation - count matching words
-            var jobWords = (await ExtractKeyPhrasesAsync(jobDescription)).Keys;
-            var resumeWords = (await ExtractKeyPhrasesAsync(resumeText)).Keys;
-
-            if (!jobWords.Any()) return 0;
-
-            var matchingWords = jobWords.Intersect(resumeWords).Count();
-            var score = (double)matchingWords / jobWords.Count() * 100;
-
-            return Math.Round(Math.Min(score, 100), 2); // Cap at 100
-        }
-
-        public async Task<Dictionary<string, string>> AnalyzeResume(string resumeText)
-        {
-            await Task.Delay(300); // Simulate processing time
-
-            var keyPhrases = await ExtractKeyPhrasesAsync(resumeText);
-            var topSkills = keyPhrases.OrderByDescending(kp => kp.Value)
-                                     .Take(5)
-                                     .Select(kp => kp.Key);
-
-            return new Dictionary<string, string>
+            try
             {
-                ["Key Skills"] = string.Join(", ", topSkills),
-                ["Language"] = "English (Confidence: 95%)",
-                ["Sentiment"] = "Positive (Confidence: 80%)",
-                ["Detected Skills"] = string.Join(", ", topSkills.Take(3))
-            };
+                // Extract skills from both documents
+                var jobSkillsTask = ExtractKeyPhrasesAsync(jobDescription);
+                var resumeSkillsTask = ExtractKeyPhrasesAsync(resumeText);
+                await Task.WhenAll(jobSkillsTask, resumeSkillsTask);
+
+                var jobSkills = await jobSkillsTask;
+                var resumeSkills = await resumeSkillsTask;
+
+                // Calculate match percentage
+                var matchingSkills = jobSkills.Keys
+                    .Intersect(resumeSkills.Keys)
+                    .ToList();
+
+                var matchPercentage = jobSkills.Count > 0
+                    ? (double)matchingSkills.Count / jobSkills.Count * 100
+                    : 0;
+
+                return new MatchAnalysisResult
+                {
+                    MatchPercentage = Math.Round(matchPercentage, 2),
+                    MatchingSkills = matchingSkills,
+                    MissingSkills = jobSkills.Keys.Except(resumeSkills.Keys).ToList(),
+                    AdditionalSkills = resumeSkills.Keys.Except(jobSkills.Keys).ToList()
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error analyzing job match");
+                throw;
+            }
         }
     }
 }

@@ -1,23 +1,27 @@
 ﻿using HireSphere.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore; // Add this
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 namespace HireSphere.Data
 {
-    public class HireSphereDbContext : DbContext
+    public class HireSphereDbContext : IdentityDbContext<IdentityUser, IdentityRole, string> // Modified this line
     {
         public HireSphereDbContext(DbContextOptions<HireSphereDbContext> options)
             : base(options)
         {
         }
 
-        // Keep all DbSets as before
+        // Your existing DbSets
         public DbSet<JobPosting> JobPostings { get; set; }
         public DbSet<Candidate> Candidates { get; set; }
         public DbSet<Application> Applications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Keep the same relationships as before
+            base.OnModelCreating(modelBuilder); // Add this line first
+
+            // Your existing relationships
             modelBuilder.Entity<Application>()
                 .HasOne(a => a.JobPosting)
                 .WithMany(j => j.Applications)
@@ -27,6 +31,23 @@ namespace HireSphere.Data
                 .HasOne(a => a.Candidate)
                 .WithMany(c => c.Applications)
                 .HasForeignKey(a => a.CandidateId);
+
+            // Add precision for decimal properties to fix the warnings
+            modelBuilder.Entity<Application>()
+                .Property(a => a.MatchScore)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Candidate>()
+                .Property(c => c.ExpectedSalary)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<JobPosting>()
+                .Property(j => j.SalaryRangeMin)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<JobPosting>()
+                .Property(j => j.SalaryRangeMax)
+                .HasPrecision(18, 2);
         }
     }
 }

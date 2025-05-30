@@ -10,25 +10,33 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 
 
 namespace HireSphere.Controllers
 {
+
+    [Authorize(Roles = "Candidate")]
     public class CandidatesController : Controller
     {
         private readonly HireSphereDbContext _context;
         private readonly FileUploadService _fileUploadService;
         private readonly AIService _aiService;
+        private readonly ILogger<CandidatesController> _logger;
+
 
         public CandidatesController(
-            HireSphereDbContext context,
-            FileUploadService fileUploadService,
-            AIService aiService)
+       HireSphereDbContext context,
+       FileUploadService fileUploadService,
+       AIService aiService,
+       ILogger<CandidatesController> logger)
         {
             _context = context;
             _fileUploadService = fileUploadService;
             _aiService = aiService;
+            _logger = logger;
         }
 
         // GET: Candidates
@@ -72,37 +80,101 @@ namespace HireSphere.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,FirstName,LastName,Email,Phone,Skills,ExpectedSalary")] Candidate candidate, IFormFile resumeFile)
         {
+            var logger = _context.GetService<ILogger<CandidatesController>>();
+            logger.LogInformation("Create method started for candidate {FirstName} {LastName}", candidate.FirstName, candidate.LastName);
+
             if (ModelState.IsValid)
             {
-                if (resumeFile != null && resumeFile.Length > 0)
+                try
                 {
-                    try
-                    {
-                        // Upload resume
-                        var resumePath = await _fileUploadService.UploadResumeAsync(resumeFile, candidate.Id);
-                        candidate.ResumePath = resumePath;
+                    logger.LogInformation("Adding candidate to database");
+                    _context.Add(candidate);
 
-                        // Extract skills from resume if Skills field is empty
-                        if (string.IsNullOrEmpty(candidate.Skills))
+                    logger.LogInformation("Saving candidate to generate ID");
+                    await _context.SaveChangesAsync();
+
+                    logger.LogInformation("Candidate saved with ID: {CandidateId}", candidate.Id);
+
+                    // Now that we have an ID, we can upload the file
+                    if (resumeFile != null)
+                    {
+                        logger.LogInformation("Resume file present, size: {Size} bytes", resumeFile.Length);
+
+                        try
                         {
-                            var resumeText = await _fileUploadService.ExtractTextFromResumeAsync(resumePath);
-                            var skills = await _aiService.ExtractKeyPhrasesAsync(resumeText);
-                            candidate.Skills = string.Join(", ", skills.Keys);
+                            logger.LogInformation("Starting file upload for candidate {CandidateId}", candidate.Id);
+
+                            // Upload resume using the newly generated ID
+                            var resumePath = await _fileUploadService.UploadResumeAsync(resumeFile, candidate.Id);
+
+                            logger.LogInformation("File uploaded successfully, path: {ResumePath}", resumePath);
+
+                            candidate.ResumePath = resumePath;
+
+                            // Update the candidate with the resume path
+                            logger.LogInformation("Updating candidate with resume path");
+                            _context.Update(candidate);
+                            await _context.SaveChangesAsync();
+                            logger.LogInformation("Candidate updated with resume path");
+
+                            // Extract skills from resume if Skills field is empty
+                            if (string.IsNullOrEmpty(candidate.Skills))
+                            {
+                                logger.LogInformation("Extracting skills from resume");
+                                var resumeText = await _fileUploadService.ExtractTextFromResumeAsync(resumePath);
+                                logger.LogInformation("Text extracted from resume, length: {TextLength}", resumeText?.Length ?? 0);
+
+                                var skills = await _aiService.ExtractKeyPhrasesAsync(resumeText);
+                                logger.LogInformation("Skills extracted: {SkillCount}", skills?.Keys.Count ?? 0);
+
+                                candidate.Skills = string.Join(", ", skills.Keys);
+
+                                // Save the extracted skills
+                                logger.LogInformation("Updating candidate with extracted skills");
+                                _context.Update(candidate);
+                                await _context.SaveChangesAsync();
+                                logger.LogInformation("Candidate updated with skills");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            // Log the exception
+                            logger.LogError(ex, "Error processing resume: {ErrorMessage}", ex.Message);
+                            ModelState.AddModelError("resumeFile", $"Error processing resume: {ex.Message}");
+                            return View(candidate);
                         }
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        ModelState.AddModelError("resumeFile", $"Error processing resume: {ex.Message}");
-                        return View(candidate);
+                        logger.LogInformation("No resume file provided");
                     }
-                }
 
-                _context.Add(candidate);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                    logger.LogInformation("Redirecting to Index after successful creation");
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (Exception ex)
+                {
+                    // Log the exception
+                    logger.LogError(ex, "Error creating candidate: {ErrorMessage}", ex.Message);
+                    ModelState.AddModelError("", $"Error creating candidate: {ex.Message}");
+                    return View(candidate);
+                }
             }
+            else
+            {
+                logger.LogInformation("ModelState is invalid");
+                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    logger.LogInformation("Validation error: {ErrorMessage}", error.ErrorMessage);
+                }
+            }
+
+            logger.LogInformation("Returning to Create view due to ModelState errors");
             return View(candidate);
         }
+
+
+
 
         // GET: Candidates/View/5
         public async Task<IActionResult> View(int id)
@@ -113,14 +185,15 @@ namespace HireSphere.Controllers
             }
 
             var candidate = await _context.Candidates
-                 .Include(c => c.Applications)
-                 .ThenInclude(a => a.JobPosting)
-                 .FirstOrDefaultAsync(m => m.Id == id);
+          .Include(c => c.Applications)
+          .ThenInclude(a => a.JobPosting)
+          .FirstOrDefaultAsync(m => m.Id == id);
+
 
             if (candidate == null)
             {
                 return NotFound();
-            } 
+            }
 
             // Get AI analysis if resume exists
             if (!string.IsNullOrEmpty(candidate.ResumePath))
@@ -128,10 +201,13 @@ namespace HireSphere.Controllers
                 try
                 {
                     var resumeText = await _fileUploadService.ExtractTextFromResumeAsync(candidate.ResumePath);
-                    ViewBag.ResumeAnalysis = await _aiService.AnalyzeResume(resumeText);
+                    // Create a generic job description for analysis
+                    var genericJobDescription = "Looking for candidate with relevant skills and experience";
+                    ViewBag.ResumeAnalysis = await _aiService.AnalyzeJobMatch(genericJobDescription, resumeText);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    _logger.LogError(ex, "Error analyzing resume");
                     // Analysis failed, continue without it
                 }
             }
@@ -139,7 +215,6 @@ namespace HireSphere.Controllers
             return View(candidate);
         }
 
-        // POST: Candidates/Apply
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Apply(int jobId, IFormFile resume, Candidate candidate)
@@ -168,15 +243,18 @@ namespace HireSphere.Controllers
                         return NotFound();
                     }
 
+                    // Calculate match score using AnalyzeJobMatch
+                    var matchAnalysis = await _aiService.AnalyzeJobMatch(
+                        job.Description + " " + job.Requirements,
+                        resumeText);
+
                     var application = new Application
                     {
                         JobPostingId = jobId,
                         CandidateId = candidate.Id,
                         ApplicationDate = DateTime.Now,
                         Status = ApplicationStatus.Submitted,
-                        MatchScore = (decimal)await _aiService.CalculateMatchScore(
-                            job.Description + " " + job.Requirements,
-                            resumeText)
+                        MatchScore = (decimal)matchAnalysis.MatchPercentage
                     };
 
                     _context.Applications.Add(application);
@@ -190,6 +268,7 @@ namespace HireSphere.Controllers
             catch (Exception ex)
             {
                 // Log the error
+                _logger.LogError(ex, "Error processing application");
                 ModelState.AddModelError("", "There was an error processing your application. Please try again.");
                 return RedirectToAction("Details", "JobPostings", new { id = jobId });
             }

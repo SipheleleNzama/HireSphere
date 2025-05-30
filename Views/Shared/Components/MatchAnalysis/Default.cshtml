@@ -1,0 +1,79 @@
+﻿@using HireSphere.Models.AI
+@model MatchAnalysisResult
+
+<div class="card mt-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">AI Match Analysis</h5>
+    </div>
+    <div class="card-body">
+        <div class="progress mb-3" style="height: 30px;">
+            <div class="progress-bar @GetProgressBarClass(Model.MatchPercentage)"
+                 role="progressbar"
+                 style="width: @Model.MatchPercentage%"
+                 aria-valuenow="@Model.MatchPercentage"
+                 aria-valuemin="0"
+                 aria-valuemax="100">
+                @Model.MatchPercentage% Match
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card border-success">
+                    <div class="card-header bg-success text-white">
+                        Matching Skills (@Model.MatchingSkills.Count)
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            @foreach (var skill in Model.MatchingSkills)
+                            {
+                                <li class="list-group-item">@skill</li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card border-warning">
+                    <div class="card-header bg-warning text-white">
+                        Missing Skills (@Model.MissingSkills.Count)
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            @foreach (var skill in Model.MissingSkills)
+                            {
+                                <li class="list-group-item">@skill</li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card border-info">
+                    <div class="card-header bg-info text-white">
+                        Additional Skills (@Model.AdditionalSkills.Count)
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            @foreach (var skill in Model.AdditionalSkills)
+                            {
+                                <li class="list-group-item">@skill</li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetProgressBarClass(double percentage) => percentage switch
+    {
+        >= 80 => "bg-success",
+        >= 50 => "bg-warning",
+        _ => "bg-danger"
+    };
+}

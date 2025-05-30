@@ -19,7 +19,7 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
     <!-- Favicon -->
     <link rel="icon" href="~/favicon.ico" type="image/x-icon">
 
@@ -305,6 +305,33 @@
             <text>showToast('@TempData["Message"]', '@TempData["MessageType"]');</text>
         }
         });
+        @if (User.IsInRole("Administrator"))
+        {
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="UserManagement" asp-action="Index">User Management</a>
+                </li>
+        }
+
+        @if (User.IsInRole("Recruiter") || User.IsInRole("HiringManager"))
+        {
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="JobPostings" asp-action="Index">Job Postings</a>
+                </li>
+        }
+        @if (User.IsInRole("DataAnalyst") || User.IsInRole("Administrator"))
+        {
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Analytics" asp-action="Index">Analytics</a>
+                </li>
+        }
+        @if (User.IsInRole("Administrator"))
+        {
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="UserManagement" asp-action="Index">
+                        <i class="fas fa-users-cog"></i> User Management
+                    </a>
+                </li>
+        }
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)

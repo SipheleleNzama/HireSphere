@@ -1,14 +1,19 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
+using Polly;
+using Polly.Retry;
+using System.Linq;
 
 namespace HireSphere.Services
 {
@@ -17,73 +22,129 @@ namespace HireSphere.Services
         private readonly IWebHostEnvironment _environment;
         private readonly ILogger<FileUploadService> _logger;
         private readonly long _maxFileSize;
+        private readonly TimeSpan _fileProcessTimeout = TimeSpan.FromSeconds(30);
 
-        public FileUploadService(IWebHostEnvironment environment, ILogger<FileUploadService> logger, IConfiguration configuration)
+        private static readonly AsyncRetryPolicy RetryPolicy = Policy
+            .Handle<IOException>()
+            .WaitAndRetryAsync(3, retryAttempt =>
+                TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+
+        public FileUploadService(IWebHostEnvironment environment,
+                               ILogger<FileUploadService> logger,
+                               IConfiguration configuration)
         {
             _environment = environment;
             _logger = logger;
-            _maxFileSize = configuration.GetValue<long>("FileUpload:MaxSizeBytes", 5 * 1024 * 1024); // Default 5MB
+            _maxFileSize = configuration.GetValue<long>("FileUpload:MaxSizeBytes", 5 * 1024 * 1024);
+
+            // Ensure resumes directory exists
+            var resumesDir = Path.Combine(_environment.WebRootPath, "resumes");
+            if (!Directory.Exists(resumesDir))
+            {
+                Directory.CreateDirectory(resumesDir);
+                _logger.LogInformation("Created resumes directory at {ResumesPath}", resumesDir);
+            }
         }
+
 
         public async Task<string> UploadResumeAsync(IFormFile file, int candidateId)
         {
+            _logger.LogInformation("Starting file upload for candidate {CandidateId}", candidateId);
+
+            using var timeoutCts = new CancellationTokenSource(_fileProcessTimeout);
+
             try
             {
+                _logger.LogInformation("Validating file for candidate {CandidateId}", candidateId);
+
                 // Validate file
                 if (file == null || file.Length == 0)
                 {
-                    throw new ArgumentException("No file was selected for upload.");
+                    _logger.LogWarning("No file selected for candidate {CandidateId}", candidateId);
+                    throw new ArgumentException("No file was selected");
                 }
+
+                _logger.LogInformation("File size: {FileSize} bytes for candidate {CandidateId}", file.Length, candidateId);
 
                 if (file.Length > _maxFileSize)
                 {
-                    throw new ArgumentException($"File size exceeds the maximum limit of {_maxFileSize / (1024 * 1024)}MB.");
+                    _logger.LogWarning("File too large ({FileSize} bytes) for candidate {CandidateId}", file.Length, candidateId);
+                    throw new ArgumentException($"File size exceeds {_maxFileSize / 1024 / 1024}MB limit");
                 }
+
+                _logger.LogInformation("Checking file extension for candidate {CandidateId}", candidateId);
 
                 var allowedExtensions = new[] { ".pdf", ".docx", ".txt" };
                 var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
 
+                _logger.LogInformation("File extension: {FileExtension} for candidate {CandidateId}", fileExtension, candidateId);
+
                 if (!allowedExtensions.Contains(fileExtension))
                 {
-                    throw new ArgumentException("Only PDF, DOCX, and TXT files are allowed.");
+                    _logger.LogWarning("Invalid file extension {FileExtension} for candidate {CandidateId}", fileExtension, candidateId);
+                    throw new ArgumentException("Only PDF, DOCX and TXT files are allowed");
                 }
 
-                // Create candidate-specific directory
+                _logger.LogInformation("Creating candidate folder for candidate {CandidateId}", candidateId);
+
+                // Create candidate-specific folder
                 var candidateFolder = Path.Combine(_environment.WebRootPath, "resumes", candidateId.ToString());
-                Directory.CreateDirectory(candidateFolder);
 
-                // Generate secure filename
-                var sanitizedFileName = $"{DateTime.Now:yyyyMMddHHmmss}_{Path.GetFileNameWithoutExtension(file.FileName)}";
-                sanitizedFileName = string.Join("_", sanitizedFileName.Split(Path.GetInvalidFileNameChars()));
-                var uniqueFileName = $"{sanitizedFileName}{fileExtension}";
-                var filePath = Path.Combine(candidateFolder, uniqueFileName);
+                _logger.LogInformation("Candidate folder path: {CandidateFolder} for candidate {CandidateId}", candidateFolder, candidateId);
 
-                // Save file
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                try
                 {
-                    await file.CopyToAsync(fileStream);
+                    _logger.LogInformation("Creating directory for candidate {CandidateId}", candidateId);
+                    Directory.CreateDirectory(candidateFolder);
+                    _logger.LogInformation("Directory created successfully for candidate {CandidateId}", candidateId);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to create directory {Directory} for candidate {CandidateId}", candidateFolder, candidateId);
+                    throw new ApplicationException("Failed to create storage directory", ex);
                 }
 
-                // Set permissions (Unix systems)
-                if (!OperatingSystem.IsWindows())
-                {
-                    File.SetUnixFileMode(filePath,
-                        UnixFileMode.UserRead | UnixFileMode.UserWrite |
-                        UnixFileMode.GroupRead |
-                        UnixFileMode.OtherRead);
-                }
+                // Generate safe filename
+                var safeFileName = $"{Guid.NewGuid()}{fileExtension}";
+                var filePath = Path.Combine(candidateFolder, safeFileName);
 
-                return $"/resumes/{candidateId}/{uniqueFileName}";
+                _logger.LogInformation("Generated file path: {FilePath} for candidate {CandidateId}", filePath, candidateId);
+
+                // Save file with retry logic
+                _logger.LogInformation("Starting file save for candidate {CandidateId}", candidateId);
+                await RetryPolicy.ExecuteAsync(async () =>
+                {
+                    _logger.LogInformation("Creating file stream for candidate {CandidateId}", candidateId);
+                    await using var stream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None,
+                        bufferSize: 4096, useAsync: true);
+
+                    _logger.LogInformation("Starting file copy for candidate {CandidateId}", candidateId);
+                    await file.CopyToAsync(stream, timeoutCts.Token);
+                    _logger.LogInformation("File copy completed for candidate {CandidateId}", candidateId);
+                });
+
+                _logger.LogInformation("Successfully uploaded resume for candidate {CandidateId} to {FilePath}",
+                    candidateId, filePath);
+
+                return $"/resumes/{candidateId}/{safeFileName}";
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogError("File upload timed out for candidate {CandidateId}", candidateId);
+                throw new ApplicationException("File upload operation timed out");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error uploading resume for candidate {CandidateId}", candidateId);
-                throw new ApplicationException("Failed to upload resume", ex);
+                _logger.LogError(ex, "Error uploading resume for candidate {CandidateId}: {ErrorMessage}",
+                    candidateId, ex.ToString());
+                throw new ApplicationException($"Failed to upload resume: {ex.Message}", ex);
             }
         }
 
         public async Task<string> ExtractTextFromResumeAsync(string filePath)
         {
+            using var timeoutCts = new CancellationTokenSource(_fileProcessTimeout);
+
             try
             {
                 var fullPath = Path.Combine(_environment.WebRootPath, filePath.TrimStart('/'));
@@ -97,11 +158,16 @@ namespace HireSphere.Services
 
                 return extension switch
                 {
-                    ".pdf" => ExtractTextFromPdf(fullPath),
-                    ".docx" => ExtractTextFromDocx(fullPath),
-                    ".txt" => await System.IO.File.ReadAllTextAsync(fullPath),
-                    _ => throw new NotSupportedException($"File extension '{extension}' is not supported for text extraction.")
+                    ".pdf" => await Task.Run(() => ExtractTextFromPdf(fullPath), timeoutCts.Token),
+                    ".docx" => await Task.Run(() => ExtractTextFromDocx(fullPath), timeoutCts.Token),
+                    ".txt" => await System.IO.File.ReadAllTextAsync(fullPath, timeoutCts.Token),
+                    _ => throw new NotSupportedException($"File extension '{extension}' is not supported")
                 };
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogError("Text extraction timed out for {FilePath}", filePath);
+                throw new ApplicationException("Text extraction timed out");
             }
             catch (Exception ex)
             {
@@ -135,7 +201,7 @@ namespace HireSphere.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error extracting text from PDF at {FilePath}", filePath);
-                throw new ApplicationException("Failed to extract text from PDF", ex);
+                throw new ApplicationException("Failed to process PDF file", ex);
             }
         }
 
@@ -156,7 +222,7 @@ namespace HireSphere.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error extracting text from DOCX at {FilePath}", filePath);
-                throw new ApplicationException("Failed to extract text from DOCX", ex);
+                throw new ApplicationException("Failed to process Word document", ex);
             }
         }
 
@@ -169,14 +235,17 @@ namespace HireSphere.Services
                 var physicalPath = Path.Combine(_environment.WebRootPath, filePath.TrimStart('/'));
                 if (System.IO.File.Exists(physicalPath))
                 {
-                    System.IO.File.Delete(physicalPath);
-
-                    // Try to delete the parent directory if empty
-                    var directory = Path.GetDirectoryName(physicalPath);
-                    if (Directory.Exists(directory) && !Directory.EnumerateFileSystemEntries(directory).Any())
+                    await Task.Run(() =>
                     {
-                        Directory.Delete(directory);
-                    }
+                        System.IO.File.Delete(physicalPath);
+
+                        // Try to delete the parent directory if empty
+                        var directory = Path.GetDirectoryName(physicalPath);
+                        if (Directory.Exists(directory) && !Directory.EnumerateFileSystemEntries(directory).Any())
+                        {
+                            Directory.Delete(directory);
+                        }
+                    });
                 }
             }
             catch (Exception ex)
