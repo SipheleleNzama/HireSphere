@@ -11,15 +11,31 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-
 builder.Services.AddDbContext<HireSphereDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection"),
         sqlServerOptions => sqlServerOptions.EnableRetryOnFailure()));
 
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
-    .AddEntityFrameworkStores<HireSphereDbContext>()
-    .AddDefaultTokenProviders();
+// FIXED: Use only AddIdentity (not AddDefaultIdentity) since you need roles
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+{
+    options.SignIn.RequireConfirmedAccount = false;
+    options.Password.RequireDigit = true;
+    options.Password.RequiredLength = 8;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireLowercase = true;
+})
+.AddEntityFrameworkStores<HireSphereDbContext>()
+.AddDefaultTokenProviders();
+
+// Add this to explicitly disable Razor Pages Identity UI
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.LogoutPath = "/Account/Logout";
+    options.AccessDeniedPath = "/Account/AccessDenied";
+});
 
 builder.Services.AddScoped<JobPostingService>();
 builder.Services.AddScoped<AIService>();
@@ -36,6 +52,7 @@ builder.Services.Configure<FormOptions>(options =>
 {
     options.MultipartBodyLengthLimit = 10 * 1024 * 1024; // 10MB
 });
+
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminOnly", policy => policy.RequireRole("Administrator"));
@@ -43,7 +60,6 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("HiringManagerOnly", policy => policy.RequireRole("HiringManager"));
     options.AddPolicy("CandidateOnly", policy => policy.RequireRole("Candidate"));
     options.AddPolicy("AnalystOnly", policy => policy.RequireRole("DataAnalyst"));
-
     // Combined policies
     options.AddPolicy("HRTeam", policy => policy.RequireRole("Recruiter", "HiringManager"));
     options.AddPolicy("StaffOnly", policy => policy.RequireRole("Recruiter", "HiringManager", "DataAnalyst"));
@@ -55,15 +71,13 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
 app.UseRouting();
-
+app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapStaticAssets();
 
 app.MapControllerRoute(
@@ -86,7 +100,6 @@ using (var scope = app.Services.CreateScope())
     // Create admin user
     var adminEmail = "admin@hiresphere.com";
     var adminUser = await userManager.FindByEmailAsync(adminEmail);
-
     if (adminUser == null)
     {
         adminUser = new ApplicationUser
@@ -95,11 +108,8 @@ using (var scope = app.Services.CreateScope())
             Email = "anelenzama07@gmail.com",
             FirstName = "Anele",
             LastName = "Nzama"
-            //EmailConfirmed = true  // Important if using email confirmation
         };
-
         var createResult = await userManager.CreateAsync(adminUser, "SecurePassword123!");
-
         if (createResult.Succeeded)
         {
             await userManager.AddToRoleAsync(adminUser, "Admin");

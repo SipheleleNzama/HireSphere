@@ -264,3 +264,32 @@ a, .btn, .card, .nav-link {
     padding-left: 1.25rem;
     margin-bottom: 0.5rem;
 }
+/* Profile card styling */
+.card {
+    border-radius: 0.5rem;
+}
+
+.card-header {
+    border-radius: 0.5rem 0.5rem 0 0 !important;
+}
+
+/* Dropdown menu styling */
+.dropdown-menu {
+    border: none;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.dropdown-item {
+    padding: 0.5rem 1.5rem;
+}
+
+    .dropdown-item:hover {
+        background-color: #f8f9fa;
+        color: #0d6efd;
+    }
+
+/* User dropdown in navbar */
+.navbar .dropdown-toggle::after {
+    vertical-align: middle;
+    margin-left: 0.5rem;
+}

@@ -1,22 +1,14 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using HireSphere.Models;
-using HireSphere.Data;
-using HireSphere.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using HireSphere.Models.ViewModels;
+using Microsoft.AspNetCore.Authentication;
+using Hangfire.States;
 
 namespace HireSphere.Controllers
 {
+    [Authorize]
     public class AccountController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
@@ -40,7 +32,6 @@ namespace HireSphere.Controllers
         }
 
         [HttpPost]
-        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model, string role = "Candidate")
         {
@@ -58,7 +49,12 @@ namespace HireSphere.Controllers
 
                 if (result.Succeeded)
                 {
-                    // Assign role
+                    // Check if role exists, if not create it
+                    if (!await _roleManager.RoleExistsAsync(role))
+                    {
+                        await _roleManager.CreateAsync(new IdentityRole(role));
+                    }
+
                     await _userManager.AddToRoleAsync(user, role);
 
                     await _signInManager.SignInAsync(user, isPersistent: false);
@@ -72,35 +68,62 @@ namespace HireSphere.Controllers
         }
 
         [HttpGet]
-        public IActionResult Login()
-        {
-            return View();
-        }
-
-        [HttpPost]
         [AllowAnonymous]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel model)
+        public async Task<IActionResult> Login(string returnUrl = null)
         {
-            if (ModelState.IsValid)
+            // Clear the existing external cookie
+            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+
+            ViewData["ReturnUrl"] = returnUrl;
+            var model = new LoginViewModel
             {
-                var result = await _signInManager.PasswordSignInAsync(
-                    model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
-
-                if (result.Succeeded)
-                {
-                    return RedirectToAction("Index", "Home");
-                }
-
-                ModelState.AddModelError(string.Empty, "Invalid login attempt.");
-                return View(model);
-            }
-
+                ReturnUrl = returnUrl,
+                ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList()
+            };
             return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Login(LoginViewModel model, string returnUrl = null)
+        {
+            ViewData["ReturnUrl"] = returnUrl;
+
+            if (ModelState.IsValid)
+            {
+                var result = await _signInManager.PasswordSignInAsync(
+                    model.Email,
+                    model.Password,
+                    model.RememberMe,
+                    lockoutOnFailure: false);
+
+                if (result.Succeeded)
+                {
+                    return RedirectToLocal(returnUrl);
+                }
+
+                ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+            }
+            // Reload external logins for the view
+            model.ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+            return View(model);
+        }
+
+        private IActionResult RedirectToLocal(string returnUrl)
+        {
+            if (Url.IsLocalUrl(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
+            else
+            {
+                return RedirectToAction("Index", "Home");
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
@@ -114,5 +137,28 @@ namespace HireSphere.Controllers
                 ModelState.AddModelError(string.Empty, error.Description);
             }
         }
+
+        // Settings Page
+        [HttpGet]
+        public async Task<IActionResult> Settings()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var model = new SettingsViewModel
+            {
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+                CurrentPassword = string.Empty,
+                NewPassword = string.Empty
+            };
+
+            return View(model);
+        }
+
+        // Removed duplicate Logout method that was causing CS0111 error
     }
 }

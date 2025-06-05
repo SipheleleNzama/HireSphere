@@ -9,6 +9,7 @@
     <meta name="description" content="HireSphere - Your complete recruitment solution">
     <meta name="keywords" content="recruitment, jobs, hiring, candidates, HR">
     <meta name="theme-color" content="#3498db">
+    <partial name="_LoginPartial" />
 
     <!-- Preload Critical Resources -->
     <link rel="preload" href="~/lib/bootstrap/dist/css/bootstrap.min.css" as="style">
@@ -44,7 +45,8 @@
         </div>
     </div>
 
-    <header>
+    <header> 
+        
         <nav class="navbar navbar-expand-lg navbar-dark bg-primary border-bottom box-shadow mb-3">
             <div class="container">
                 <a class="navbar-brand d-flex align-items-center" asp-area="" asp-controller="Home" asp-action="Index">
@@ -101,6 +103,7 @@
                                 </ul>
                             </li>
                         </ul>
+						<partial name="_LoginPartial" />
                     </div>
                 </div>
             </div>

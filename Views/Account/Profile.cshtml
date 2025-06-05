@@ -1,0 +1,48 @@
+﻿@model ProfileViewModel
+@{
+    ViewData["Title"] = "Profile";
+    Layout = "_Layout";
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">My Profile</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0">Full Name</h6>
+                        </div>
+                        <div class="col-sm-9 text-secondary">
+                            @Model.FirstName @Model.LastName
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0">Email</h6>
+                        </div>
+                        <div class="col-sm-9 text-secondary">
+                            @Model.Email
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0">Phone</h6>
+                        </div>
+                        <div class="col-sm-9 text-secondary">
+                            @(Model.PhoneNumber ?? "Not provided")
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <a class="btn btn-primary" asp-action="Settings">Edit Profile</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

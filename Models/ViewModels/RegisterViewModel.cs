@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 
 namespace HireSphere.Models.ViewModels
 {
@@ -24,5 +26,8 @@ namespace HireSphere.Models.ViewModels
         [Required]
         [Display(Name = "Last Name")]
         public string? LastName { get; set; }
+
+        // Role selection (if needed) 
+        public string Role { get; set; } = "User"; // Default role
     }
 }

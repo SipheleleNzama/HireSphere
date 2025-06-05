@@ -40,6 +40,7 @@ namespace HireSphere.Controllers
         }
 
         // GET: Candidates
+        [AllowAnonymous]
         public async Task<IActionResult> Index(string searchString, string sortOrder)
         {
             ViewData["NameSortParm"] = string.IsNullOrEmpty(sortOrder) ? "name_desc" : "";

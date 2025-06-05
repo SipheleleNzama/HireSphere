@@ -33,12 +33,14 @@ namespace HireSphere.Controllers
         }
 
         // GET: JobPostings
+        [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
             return View(await _context.JobPostings.ToListAsync());
         }
 
         // GET: JobPostings/Details/5
+        [AllowAnonymous]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
