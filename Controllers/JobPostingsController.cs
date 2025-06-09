@@ -60,6 +60,7 @@ namespace HireSphere.Controllers
         }
 
         // GET: JobPostings/Create
+        [AllowAnonymous]
         public IActionResult Create()
         {
             return View();
@@ -67,6 +68,7 @@ namespace HireSphere.Controllers
 
         // POST: JobPostings/Create
         [HttpPost]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Title,Description,Requirements,Salary,Location")] JobPosting jobPosting)
         {
@@ -98,6 +100,7 @@ namespace HireSphere.Controllers
 
         // POST: JobPostings/Edit/5
         [HttpPost]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,Requirements,Salary,Location,PostedDate")] JobPosting jobPosting)
         {
@@ -130,6 +133,7 @@ namespace HireSphere.Controllers
         }
 
         // GET: JobPostings/Delete/5
+        [AllowAnonymous]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -149,6 +153,7 @@ namespace HireSphere.Controllers
 
         // POST: JobPostings/Delete/5
         [HttpPost, ActionName("Delete")]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
@@ -165,6 +170,7 @@ namespace HireSphere.Controllers
 
         // GET: JobPostings/Matches/5
         [HttpGet("JobPostings/Matches/{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> JobDetailsWithMatches(int id)
         {
             var jobPosting = await _context.JobPostings

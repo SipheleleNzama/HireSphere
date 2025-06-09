@@ -71,6 +71,7 @@ namespace HireSphere.Controllers
         }
 
         // GET: Candidates/Create
+        [AllowAnonymous]
         public IActionResult Create()
         {
             return View();
@@ -78,6 +79,7 @@ namespace HireSphere.Controllers
 
         // POST: Candidates/Create
         [HttpPost]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,FirstName,LastName,Email,Phone,Skills,ExpectedSalary")] Candidate candidate, IFormFile resumeFile)
         {
@@ -178,6 +180,7 @@ namespace HireSphere.Controllers
 
 
         // GET: Candidates/View/5
+        [AllowAnonymous]
         public async Task<IActionResult> View(int id)
         {
             if (id == null)
@@ -217,6 +220,7 @@ namespace HireSphere.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Apply(int jobId, IFormFile resume, Candidate candidate)
         {
@@ -276,6 +280,7 @@ namespace HireSphere.Controllers
         }
 
         // GET: Candidates/Edit/5
+        [AllowAnonymous]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -293,6 +298,7 @@ namespace HireSphere.Controllers
 
         // POST: Candidates/Edit/5
         [HttpPost]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,FirstName,LastName,Email,Phone,Skills,ExpectedSalary,ResumePath")] Candidate candidate, IFormFile resumeFile)
         {
@@ -338,6 +344,7 @@ namespace HireSphere.Controllers
         }
 
         // GET: Candidates/Delete/5
+       [AllowAnonymous]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -357,6 +364,7 @@ namespace HireSphere.Controllers
 
         // POST: Candidates/Delete/5
         [HttpPost, ActionName("Delete")]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {

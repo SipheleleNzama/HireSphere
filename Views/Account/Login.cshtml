@@ -1,60 +1,76 @@
 ﻿@model LoginViewModel
 @{
     Layout = "_Layout";
-    ViewData["Title"] = "Log in to HireSphere";
+    ViewData["Title"] = "Log in";
 }
 
-<div class="container mt-5">
+<div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0">@ViewData["Title"]</h3>
-                </div>
-                <div class="card-body">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-lg">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <h2 class="fw-bold text-primary">Welcome Back</h2>
+                        <p class="text-muted">Log in to your HireSphere account</p>
+                    </div>
+
                     <form asp-action="Login" method="post">
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
                         <div class="mb-3">
                             <label asp-for="Email" class="form-label">Email Address</label>
-                            <input asp-for="Email" class="form-control" placeholder="Enter your email">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-envelope"></i>
+                                </span>
+                                <input asp-for="Email" class="form-control" placeholder="your@email.com">
+                            </div>
                             <span asp-validation-for="Email" class="text-danger small"></span>
                         </div>
 
                         <div class="mb-3">
                             <label asp-for="Password" class="form-label">Password</label>
-                            <input asp-for="Password" class="form-control" placeholder="Enter your password">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                                <input asp-for="Password" class="form-control" placeholder="••••••••">
+                            </div>
                             <span asp-validation-for="Password" class="text-danger small"></span>
                         </div>
 
                         <div class="mb-3 form-check">
                             <input asp-for="RememberMe" class="form-check-input">
                             <label asp-for="RememberMe" class="form-check-label">Remember me</label>
+                            <a href="#" class="float-end small">Forgot password?</a>
                         </div>
 
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">Log In</button>
+                        <button type="submit" class="btn btn-primary w-100 py-2 mb-3">
+                            Log In
+                        </button>
+
+                        <div class="text-center small">
+                            Don't have an account?
+                            <a asp-action="Register" class="text-decoration-none">Sign up</a>
                         </div>
                     </form>
-
-                    <div class="mt-3 text-center">
-                        <a href="#">Forgot your password?</a>
-                    </div>
-
-                    <hr class="my-4">
-
-                    <div class="text-center">
-                        <p class="mb-2">New to HireSphere?</p>
-                        <a asp-action="Register" class="btn btn-outline-primary">Create an account</a>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+@section Styles {
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+        }
+        .input-group-text {
+            background-color: #f8f9fa;
+        }
+    </style>
 }

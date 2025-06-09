@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore; // Add this
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Identity.Client;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 
 namespace HireSphere.Data
 {
@@ -17,6 +18,7 @@ namespace HireSphere.Data
         public DbSet<JobPosting> JobPostings { get; set; }
         public DbSet<Candidate> Candidates { get; set; }
         public DbSet<Application> Applications { get; set; }
+        public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
