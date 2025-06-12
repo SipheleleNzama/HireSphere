@@ -1,0 +1,28 @@
+﻿@page
+@model List<CandidateAnalysis>
+
+<h2>Top Performers</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Rank</th>
+            <th>Candidate</th>
+            <th>Match Percentage</th>
+            <th>Skills</th>
+            <th>Date Analyzed</th>
+        </tr>
+    </thead>
+    <tbody>
+        @for (int i = 0; i < Model.Count; i++)
+        {
+            <tr>
+                <td>@(i + 1)</td>
+                <td>@Model[i].Name</td>
+                <td>@Model[i].MatchPercentage%</td>
+                <td>@Model[i].Skills</td>
+                <td>@Model[i].UploadDate.ToString("g")</td>
+            </tr>
+        }
+    </tbody>
+</table>

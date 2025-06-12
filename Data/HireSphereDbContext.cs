@@ -18,6 +18,7 @@ namespace HireSphere.Data
         public DbSet<JobPosting> JobPostings { get; set; }
         public DbSet<Candidate> Candidates { get; set; }
         public DbSet<Application> Applications { get; set; }
+        public DbSet<CandidateAnalysis> CandidateAnalyses { get; set; }
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

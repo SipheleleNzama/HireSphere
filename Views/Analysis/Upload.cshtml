@@ -1,0 +1,18 @@
+﻿
+@model HireSphere.Views.Analysis.UploadModel
+
+<h2>Upload Resume for Analysis</h2>
+
+<form asp-action="Upload" method="post" enctype="multipart/form-data">
+    <div class="form-group">
+        <label for="jobDescription">Job Description:</label>
+        <textarea id="jobDescription" name="jobDescription" class="form-control" rows="5" required></textarea>
+    </div>
+
+    <div class="form-group">
+        <label for="resumeFile">Resume File:</label>
+        <input type="file" id="resumeFile" name="resumeFile" class="form-control-file" required accept=".pdf,.doc,.docx,.txt">
+    </div>
+
+    <button type="submit" class="btn btn-primary">Analyze</button>
+</form>

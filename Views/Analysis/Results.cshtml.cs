@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace HireSphere.Views.Analytics
+namespace HireSphere.Views.Analysis
 {
-    public class IndexModel : PageModel
+    public class ResultsModel : PageModel
     {
         public void OnGet()
         {

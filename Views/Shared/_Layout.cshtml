@@ -75,15 +75,22 @@
                             </a> 
                         </li> 
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Insights" asp-action="Index">
+                            <a class="nav-link text-dark" asp-controller="Insights" asp-action="Index">
                                 <i class="fas fa-chart-pie me-1"></i> Insights
                            </a>
+                        </li> 
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Analysis" asp-action="Upload">
+                                <i class="fas fa-file-alt me-1"></i> CV Analysis
+                            </a>
                         </li>
+
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Dashboard" asp-action="Index">
                                 <i class="fas fa-tachometer-alt me-1"></i> Dashboard
-                            </a>
-                        </li>
+                            </a> 
+                        </li> 
+
                         @if (User.IsInRole("Administrator"))
                         {
                             <li class="nav-item">

@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace HireSphere.Views.Analytics
+namespace HireSphere.Views.Analysis
 {
-    public class JobTrendsModel : PageModel
+    public class UploadModel : PageModel
     {
         public void OnGet()
         {
