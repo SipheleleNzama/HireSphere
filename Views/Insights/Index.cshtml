@@ -1,0 +1,49 @@
+﻿@{
+	ViewData["Title"] = "Insights Dashboard";
+}
+
+<div class="row">
+    <div class="col-md-6">
+        <canvas id="skillsChart" width="400" height="300"></canvas>
+    </div>
+</div> 
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Fetch data from controller
+            $.getJSON('/Insights/top-skills', function(data) {
+                var labels = Object.keys(data);
+                var values = Object.values(data);
+
+                // Get canvas context
+                var ctx = document.getElementById('skillsChart').getContext('2d');
+
+                // Render chart
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Top Skills',
+                            data: values,
+                            backgroundColor: 'rgba(54, 162, 235, 0.6)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                console.error('Error loading skills data:', textStatus, errorThrown);
+                $('#skillsChart').parent().html('<p class="text-danger">Error loading chart data</p>');
+            });
+        });
+    </script>
+}

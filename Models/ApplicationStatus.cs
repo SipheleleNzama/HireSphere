@@ -4,9 +4,14 @@
     {
         Submitted,
         UnderReview,
+        Contacted,
         Interviewing,
         Offered,
         Hired,
         Rejected
     }
-}
+} 
+
+
+
+

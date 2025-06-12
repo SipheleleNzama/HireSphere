@@ -4,6 +4,7 @@ using HireSphere.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HireSphere.Migrations
 {
     [DbContext(typeof(HireSphereDbContext))]
-    partial class HireSphereDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250609125401_AddIdentity")]
+    partial class AddIdentity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -39,14 +42,8 @@ namespace HireSphere.Migrations
                     b.Property<int>("CandidateId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Feedback")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("JobPostingId")
                         .HasColumnType("int");
-
-                    b.Property<DateTime?>("LastUpdated")
-                        .HasColumnType("datetime2");
 
                     b.Property<decimal>("MatchScore")
                         .HasPrecision(18, 2)

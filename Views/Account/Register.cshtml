@@ -8,60 +8,109 @@
     <div class="row justify-content-center">
         <div class="col-md-6">
             <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-primary text-white text-center">
                     <h3 class="mb-0">@ViewData["Title"]</h3>
+                    <p class="mb-0">Create your account and start your journey</p>
                 </div>
                 <div class="card-body">
-                    <form asp-action="Register" method="post">
+
+                    <!-- External Registration Buttons -->
+                    <div class="mb-4">
+                        <h5 class="text-center mb-3">Quick Sign Up</h5>
+                        <form asp-action="ExternalLogin" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post">
+                            <div class="d-grid gap-2">
+                                <button type="submit" name="provider" value="Google" class="btn btn-outline-danger btn-lg">
+                                    <i class="fab fa-google me-2"></i>Sign up with Google
+                                </button>
+                                <button type="submit" name="provider" value="Microsoft" class="btn btn-outline-primary btn-lg">
+                                    <i class="fab fa-microsoft me-2"></i>Sign up with Microsoft
+                                </button>
+                                <button type="submit" name="provider" value="Facebook" class="btn btn-outline-primary btn-lg" style="background-color: #1877f2; border-color: #1877f2; color: white;">
+                                    <i class="fab fa-facebook-f me-2"></i>Sign up with Facebook
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Divider -->
+                    <div class="text-center my-4">
+                        <div class="divider position-relative">
+                            <hr />
+                            <span class="divider-text bg-white px-3 text-muted">OR</span>
+                        </div>
+                    </div>
+
+                    <!-- Registration Form -->
+                    <form asp-action="Register" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post">
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label asp-for="FirstName" class="form-label">First Name</label>
-                                <input asp-for="FirstName" class="form-control" placeholder="First name">
+                                <input asp-for="FirstName" class="form-control" placeholder="First name" />
                                 <span asp-validation-for="FirstName" class="text-danger small"></span>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label asp-for="LastName" class="form-label">Last Name</label>
-                                <input asp-for="LastName" class="form-control" placeholder="Last name">
+                                <input asp-for="LastName" class="form-control" placeholder="Last name" />
                                 <span asp-validation-for="LastName" class="text-danger small"></span>
                             </div>
                         </div>
 
                         <div class="mb-3">
                             <label asp-for="Email" class="form-label">Email Address</label>
-                            <input asp-for="Email" class="form-control" placeholder="your@email.com">
+                            <input asp-for="Email" class="form-control" placeholder="your@email.com" />
                             <span asp-validation-for="Email" class="text-danger small"></span>
                         </div>
 
                         <div class="mb-3">
                             <label asp-for="Password" class="form-label">Password</label>
-                            <input asp-for="Password" class="form-control" placeholder="Create a password">
+                            <input asp-for="Password" class="form-control" placeholder="Create a password" />
                             <span asp-validation-for="Password" class="text-danger small"></span>
                         </div>
 
                         <div class="mb-3">
                             <label asp-for="ConfirmPassword" class="form-label">Confirm Password</label>
-                            <input asp-for="ConfirmPassword" class="form-control" placeholder="Confirm your password">
+                            <input asp-for="ConfirmPassword" class="form-control" placeholder="Confirm your password" />
                             <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
                         </div>
 
                         <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">Create Account</button>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-user-plus me-2"></i>Create Account
+                            </button>
                         </div>
                     </form>
 
-                    <hr class="my-4">
+                    <hr class="my-4" />
 
+                    <!-- Additional Links -->
                     <div class="text-center">
                         <p class="mb-2">Already have an account?</p>
-                        <a asp-action="Login" class="btn btn-outline-secondary">Sign In</a>
+                        <a asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]" class="btn btn-outline-secondary">Sign In</a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .divider hr {
+        border: 0;
+        border-top: 1px solid #dee2e6;
+        margin: 0;
+    }
+
+    .divider-text {
+        position: absolute;
+        top: -0.7rem;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+</style>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

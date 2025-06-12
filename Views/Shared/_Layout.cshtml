@@ -60,29 +60,34 @@
                 <div class="collapse navbar-collapse" id="mainNav">
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="Index">
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">
                                 <i class="fas fa-home me-1"></i> Home
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="JobPostings" asp-action="Index">
+                            <a class="nav-link text-dark" asp-controller="JobPostings" asp-action="Index">
                                 <i class="fas fa-briefcase me-1"></i> Jobs
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Candidates" asp-action="Index">
+                            <a class="nav-link text-dark" asp-controller="Candidates" asp-action="Index">
                                 <i class="fas fa-users me-1"></i> Candidates
-                            </a>
+                            </a> 
+                        </li> 
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Insights" asp-action="Index">
+                                <i class="fas fa-chart-pie me-1"></i> Insights
+                           </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Dashboard" asp-action="Index">
+                            <a class="nav-link text-dark" asp-controller="Dashboard" asp-action="Index">
                                 <i class="fas fa-tachometer-alt me-1"></i> Dashboard
                             </a>
                         </li>
                         @if (User.IsInRole("Administrator"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="UserManagement" asp-action="Index">
+                                <a class="nav-link text-dark" asp-controller="UserManagement" asp-action="Index">
                                     <i class="fas fa-users-cog me-1"></i> Admin
                                 </a>
                             </li>

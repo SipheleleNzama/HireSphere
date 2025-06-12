@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.DataProtection;
 
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -47,6 +49,7 @@ builder.Services.AddScoped<JobPostingService>();
 builder.Services.AddScoped<AIService>();
 builder.Services.AddScoped<FileUploadService>();
 builder.Services.AddScoped<RoleService>();
+builder.Services.AddScoped<InsightsService>();
 builder.Services.AddScoped<IPasswordHasher<ApplicationUser>, PasswordHasher<ApplicationUser>>();
 builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(new DirectoryInfo(@"C:\temp-keys\")) // Use a secure location
@@ -62,6 +65,25 @@ builder.Services.Configure<FormOptions>(options =>
 {
     options.MultipartBodyLengthLimit = 10 * 1024 * 1024; // 10MB
 });
+
+// Add external authentication
+builder.Services.AddAuthentication()
+    .AddGoogle(options =>
+    {
+        options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+        options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+    })
+    .AddMicrosoftAccount(options =>
+    {
+        options.ClientId = builder.Configuration["Authentication:Microsoft:ClientId"];
+        options.ClientSecret = builder.Configuration["Authentication:Microsoft:ClientSecret"];
+    })
+    .AddFacebook(options =>
+    {
+        options.AppId = builder.Configuration["Authentication:Facebook:AppId"];
+        options.AppSecret = builder.Configuration["Authentication:Facebook:AppSecret"];
+    });
+
 
 builder.Services.AddAuthorization(options =>
 {
